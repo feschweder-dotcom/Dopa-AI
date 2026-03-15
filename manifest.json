@@ -1,0 +1,10 @@
+{
+  "name": "Dopa-AI",
+  "short_name": "Dopa-AI",
+  "description": "Track habits, build discipline, and improve daily focus",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "orientation": "portrait"
+}

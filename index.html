@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Dopa-AI</title>
+  <meta name="theme-color" content="#0a0a0a" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body, #root { height: 100%; }
+    body { font-family: 'Inter', sans-serif; background: #0a0a0a; color: #fff; -webkit-font-smoothing: antialiased; }
+    button { cursor: pointer; border: none; background: none; font-family: inherit; }
+    input, select { font-family: inherit; }
+    input:focus, select:focus { outline: none; }
+    ::-webkit-scrollbar { width: 0px; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect } = React;
+const STORAGE_KEY = 'dopaai_v2';
+const DEFAULT_DOPA = 5;
+const CATEGORIES = [
+  { delta: -10, words: ['work','working','study','studying','learn','learning','code','coding','programming','job','office','school','homework'] },
+  { delta: -15, words: ['gym','workout','jog','jogging','run','running','exercise','fitness','pushups','situps','walk','walking','cycling','bike'] },
+  { delta: -12, words: ['meditate','meditation','breathing','breathwork','cold shower','stretch','stretching','yoga','journal','journaling'] },
+  { delta:  -4, words: ['clean','cleaning','cook','cooking','dishes','laundry','shopping','groceries','shower','hygiene','commute'] },
+  { delta:  +5, words: ['music','podcast','youtube','documentary','read fiction','novel'] },
+  { delta: +12, words: ['shorts','tiktok','reels','instagram','netflix','series','tv','movie'] },
+  { delta: +20, words: ['porn','masturbation','sex','gaming','video games','gambling','junk food','sugar','sweets','fast food'] },
+];
+function todayStr() { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function clamp(v,lo,hi) { return Math.max(lo,Math.min(hi,v)); }
+function matchActivity(text) { const lower=text.toLowerCase(); for(const cat of CATEGORIES) for(const word of cat.words) if(lower.includes(word)) return cat.delta; return +3; }
+function load() { try { const r=localStorage.getItem(STORAGE_KEY); return r?JSON.parse(r):null; } catch { return null; } }
+function save(d) { try { localStorage.setItem(STORAGE_KEY,JSON.stringify(d)); } catch {} }
+function initData(profile) { return { profile, dopamine:DEFAULT_DOPA, lastReset:todayStr(), activities:[], flames:0, targetMin:20, targetMax:40 }; }
+function hydrate() {
+  let d=load(); if(!d) return null;
+  const today=todayStr();
+  if(d.lastReset!==today) {
+    const prev=(d.activities||[]).filter(a=>a.date===d.lastReset);
+    if(prev.length>0){const avg=prev.reduce((s,a)=>s+a.resultingDopamine,0)/prev.length; d.flames=(avg>=d.targetMin&&avg<=d.targetMax)?(d.flames||0)+1:0;}
+    d.dopamine=DEFAULT_DOPA; d.lastReset=today; save(d);
+  }
+  return d;
+}
+
+function Onboarding({ onDone }) {
+  const [gender, setGender] = useState('');
+  const [age, setAge] = useState('');
+  const [weight, setWeight] = useState('');
+  const [name, setName] = useState('');
+  const ready = gender && age && weight;
+  const inp = { width:'100%', padding:'16px 20px', background:'#161616', border:'1px solid #222', borderRadius:'14px', color:'#fff', fontSize:'16px', marginTop:'10px' };
+  return (
+    <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', justifyContent:'center', padding:'40px 28px' }}>
+      <div style={{ marginBottom:'44px' }}>
+        <div style={{ fontSize:'12px', color:'#444', letterSpacing:'0.2em', fontFamily:'Syne, sans-serif', marginBottom:'14px' }}>DOPA-AI</div>
+        <div style={{ fontSize:'40px', fontWeight:'800', fontFamily:'Syne, sans-serif', lineHeight:1.1, marginBottom:'12px' }}>Let's set<br/>you up.</div>
+        <div style={{ fontSize:'14px', color:'#555', lineHeight:1.6 }}>Takes 10 seconds.</div>
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:'22px' }}>
+        <div>
+          <div style={{ fontSize:'11px', color:'#555', letterSpacing:'0.15em', fontFamily:'Syne, sans-serif' }}>YOUR NAME (optional)</div>
+          <input value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Felix" style={inp}/>
+        </div>
+        <div>
+          <div style={{ fontSize:'11px', color:'#555', letterSpacing:'0.15em', fontFamily:'Syne, sans-serif' }}>GENDER</div>
+          <div style={{ display:'flex', gap:'10px', marginTop:'10px' }}>
+            {['Male','Female','Other'].map(g=>(
+              <button key={g} onClick={()=>setGender(g)} style={{ flex:1, padding:'15px 8px', background:gender===g?'#fff':'#161616', border:`1px solid ${gender===g?'#fff':'#222'}`, borderRadius:'14px', color:gender===g?'#000':'#666', fontSize:'13px', fontWeight:'600', fontFamily:'Syne, sans-serif' }}>{g}</button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <div style={{ fontSize:'11px', color:'#555', letterSpacing:'0.15em', fontFamily:'Syne, sans-serif' }}>AGE</div>
+          <input value={age} onChange={e=>setAge(e.target.value)} type="number" min="10" max="99" placeholder="e.g. 22" style={inp}/>
+        </div>
+        <div>
+          <div style={{ fontSize:'11px', color:'#555', letterSpacing:'0.15em', fontFamily:'Syne, sans-serif' }}>BODY WEIGHT (kg)</div>
+          <input value={weight} onChange={e=>setWeight(e.target.value)} type="number" min="30" max="300" placeholder="e.g. 75" style={inp}/>
+        </div>
+      </div>
+      <button onClick={()=>ready&&onDone({gender,age:parseInt(age),weight:parseFloat(weight),name:name.trim()||'User'})} style={{ marginTop:'40px', width:'100%', padding:'19px', background:ready?'#fff':'#161616', color:ready?'#000':'#333', borderRadius:'16px', fontSize:'15px', fontWeight:'800', fontFamily:'Syne, sans-serif', letterSpacing:'0.05em' }}>
+        CONTINUE →
+      </button>
+    </div>
+  );
+}
+
+function InstallScreen({ onInstall, onSkip, installPrompt }) {
+  return (
+    <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', justifyContent:'center', padding:'40px 28px' }}>
+      <div style={{ marginBottom:'48px', textAlign:'center' }}>
+        <div style={{ fontSize:'64px', marginBottom:'24px' }}>📲</div>
+        <div style={{ fontSize:'36px', fontWeight:'800', fontFamily:'Syne, sans-serif', lineHeight:1.1, marginBottom:'16px' }}>
+          Add to your<br/>home screen.
+        </div>
+        <div style={{ fontSize:'15px', color:'#555', lineHeight:1.7 }}>
+          Install Dopa-AI like a real app.<br/>No App Store needed.
+        </div>
+      </div>
+
+      <div style={{ background:'#111', borderRadius:'20px', padding:'20px', border:'1px solid #1c1c1c', marginBottom:'32px' }}>
+        {[['⚡', 'Opens instantly like a real app'],['📴', 'Works offline'],['🔒', 'All data stays on your phone'],['🚫', 'No App Store. No account.']].map(([icon, text]) => (
+          <div key={text} style={{ display:'flex', alignItems:'center', gap:'14px', padding:'10px 0', borderBottom:'1px solid #1a1a1a' }}>
+            <span style={{ fontSize:'20px' }}>{icon}</span>
+            <span style={{ fontSize:'14px', color:'#aaa' }}>{text}</span>
+          </div>
+        ))}
+      </div>
+
+      <button
+        onClick={()=>{ if(installPrompt){ installPrompt.prompt(); installPrompt.userChoice.then(()=>onInstall()); } else { onInstall(); } }}
+        style={{ width:'100%', padding:'19px', background:'#fff', color:'#000', borderRadius:'16px', fontSize:'15px', fontWeight:'800', fontFamily:'Syne, sans-serif', letterSpacing:'0.05em', marginBottom:'14px' }}
+      >
+        ↓ INSTALL APP
+      </button>
+
+      <button
+        onClick={onSkip}
+        style={{ width:'100%', padding:'16px', background:'transparent', color:'#444', borderRadius:'16px', fontSize:'14px', fontWeight:'500', fontFamily:'Syne, sans-serif' }}
+      >
+        I don't want to
+      </button>
+    </div>
+  );
+}
+
+function HomeScreen({ data, setData, installPrompt, setInstallPrompt }) {
+  const [text, setText] = useState('');
+  const [mins, setMins] = useState('');
+  const [flash, setFlash] = useState(null);
+  function handleAdd() {
+    const trimmed=text.trim(); if(!trimmed) return;
+    const m=parseFloat(mins)||30;
+    const baseDelta=matchActivity(trimmed);
+    const finalDelta=Math.round(baseDelta*Math.min(m/30,2.0)*10)/10;
+    const newDopa=clamp(Math.round((data.dopamine+finalDelta)*10)/10,1,100);
+    const entry={id:Date.now(),activityText:trimmed,durationMinutes:m,baseDelta,finalDelta,resultingDopamine:newDopa,timestamp:new Date().toISOString(),date:todayStr()};
+    const nd={...data,dopamine:newDopa,activities:[...data.activities,entry]};
+    setData(nd); setText(''); setMins(''); setFlash(finalDelta); setTimeout(()=>setFlash(null),1500);
+  }
+  const dopaColor = data.dopamine<=30?'#4d8fff':data.dopamine<=60?'#fff':'#ff4444';
+  const todayActs = data.activities.filter(a=>a.date===todayStr());
+  const greeting = data.profile?.name ? `Hey, ${data.profile.name}.` : 'Hey.';
+  return (
+    <div style={{ padding:'28px 24px 120px' }}>
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'32px' }}>
+        <div>
+          <div style={{ fontSize:'24px', fontWeight:'800', fontFamily:'Syne, sans-serif' }}>{greeting}</div>
+          <div style={{ fontSize:'13px', color:'#555', marginTop:'3px' }}>{data.profile?.gender} · {data.profile?.age}y · {data.profile?.weight}kg</div>
+        </div>
+        <div style={{ display:'flex', alignItems:'center', gap:'6px', background:'#161616', padding:'9px 16px', borderRadius:'20px', border:'1px solid #222' }}>
+          <span style={{ fontSize:'16px' }}>🔥</span>
+          <span style={{ fontSize:'17px', fontWeight:'800', fontFamily:'Syne, sans-serif' }}>{data.flames}</span>
+        </div>
+      </div>
+      <div style={{ background:'#111', borderRadius:'22px', padding:'28px 24px 24px', marginBottom:'16px', border:'1px solid #1c1c1c', textAlign:'center' }}>
+        <div style={{ fontSize:'11px', color:'#444', letterSpacing:'0.2em', marginBottom:'6px', fontFamily:'Syne, sans-serif' }}>DOPAMINE</div>
+        <div style={{ position:'relative', display:'inline-block' }}>
+          <div style={{ fontSize:'90px', fontWeight:'800', fontFamily:'Syne, sans-serif', lineHeight:1, color:dopaColor, transition:'color 0.3s' }}>
+            {Math.round(data.dopamine)}
+          </div>
+          {flash!==null && (
+            <div style={{ position:'absolute', top:'10px', right:'-50px', fontSize:'22px', fontWeight:'800', fontFamily:'Syne, sans-serif', color:flash<0?'#4d8fff':'#ff4444' }}>
+              {flash>0?'+':''}{Math.round(flash)}
+            </div>
+          )}
+        </div>
+        <div style={{ marginTop:'18px', height:'4px', background:'#1c1c1c', borderRadius:'2px', overflow:'hidden' }}>
+          <div style={{ height:'100%', width:`${((data.dopamine-1)/99)*100}%`, background:dopaColor, borderRadius:'2px', transition:'width 0.4s ease' }}/>
+        </div>
+        <div style={{ display:'flex', justifyContent:'space-between', marginTop:'8px' }}>
+          <span style={{ fontSize:'10px', color:'#333' }}>1</span>
+          <span style={{ fontSize:'10px', color:'#444' }}>TARGET {data.targetMin}–{data.targetMax}</span>
+          <span style={{ fontSize:'10px', color:'#333' }}>100</span>
+        </div>
+      </div>
+      <div style={{ background:'#111', borderRadius:'22px', padding:'20px', border:'1px solid #1c1c1c', marginBottom:'14px' }}>
+        <input value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleAdd()} placeholder="What did you just do?" style={{ width:'100%', background:'#1a1a1a', border:'1px solid #252525', color:'#fff', padding:'15px 16px', fontSize:'15px', borderRadius:'12px', marginBottom:'12px' }}/>
+        <div style={{ display:'flex', gap:'10px' }}>
+          <input value={mins} onChange={e=>setMins(e.target.value)} type="number" placeholder="Min" style={{ width:'88px', background:'#1a1a1a', border:'1px solid #252525', color:'#fff', padding:'15px 12px', fontSize:'15px', borderRadius:'12px' }}/>
+          <button onClick={handleAdd} style={{ flex:1, background:'#fff', color:'#000', padding:'15px', borderRadius:'12px', fontSize:'14px', fontWeight:'800', fontFamily:'Syne, sans-serif', letterSpacing:'0.05em' }}>ADD</button>
+        </div>
+      </div>
+      {todayActs.length>0 && (
+        <div>
+          <div style={{ fontSize:'11px', color:'#444', letterSpacing:'0.15em', fontFamily:'Syne, sans-serif', marginBottom:'10px', marginTop:'6px' }}>TODAY</div>
+          {todayActs.slice(-4).reverse().map(a=>(
+            <div key={a.id} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'15px 18px', background:'#111', borderRadius:'16px', marginBottom:'8px', border:'1px solid #1c1c1c' }}>
+              <div>
+                <div style={{ fontSize:'14px', fontWeight:'500' }}>{a.activityText}</div>
+                <div style={{ fontSize:'11px', color:'#555', marginTop:'2px' }}>{a.durationMinutes} min</div>
+              </div>
+              <div style={{ fontSize:'22px', fontWeight:'800', fontFamily:'Syne, sans-serif', color:a.finalDelta<0?'#4d8fff':'#ff4444' }}>{a.finalDelta>0?'+':''}{Math.round(a.finalDelta)}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+function HistoryScreen({ data }) {
+  const [sel, setSel] = useState(todayStr());
+  const dates=[...new Set(data.activities.map(a=>a.date))].sort((a,b)=>b.localeCompare(a));
+  const acts=data.activities.filter(a=>a.date===sel).sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
+  function fmtTime(ts){const d=new Date(ts);return`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
+  function fmtDate(str){const d=new Date(str+'T00:00:00');return d.toLocaleDateString('en-US',{month:'short',day:'numeric'}).toUpperCase();}
+  return (
+    <div style={{ padding:'28px 24px 120px' }}>
+      <div style={{ fontSize:'30px', fontWeight:'800', fontFamily:'Syne, sans-serif', marginBottom:'24px' }}>Log</div>
+      <div style={{ display:'flex', gap:'8px', overflowX:'auto', paddingBottom:'16px', marginBottom:'16px' }}>
+        {dates.length===0&&<div style={{fontSize:'13px',color:'#555'}}>No activities yet.</div>}
+        {dates.map(d=><button key={d} onClick={()=>setSel(d)} style={{ padding:'8px 18px', borderRadius:'20px', flexShrink:0, background:sel===d?'#fff':'#161616', color:sel===d?'#000':'#555', fontSize:'12px', fontWeight:'700', fontFamily:'Syne, sans-serif', border:`1px solid ${sel===d?'#fff':'#252525'}` }}>{fmtDate(d)}</button>)}
+      </div>
+      {acts.length===0&&<div style={{fontSize:'13px',color:'#555',textAlign:'center',marginTop:'48px'}}>Nothing here.</div>}
+      {acts.map(a=>(
+        <div key={a.id} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'17px 0', borderBottom:'1px solid #161616' }}>
+          <div>
+            <div style={{fontSize:'15px',fontWeight:'500'}}>{a.activityText}</div>
+            <div style={{fontSize:'12px',color:'#555',marginTop:'3px'}}>{fmtTime(a.timestamp)} · {a.durationMinutes} min</div>
+          </div>
+          <div style={{textAlign:'right'}}>
+            <div style={{fontSize:'22px',fontWeight:'800',fontFamily:'Syne, sans-serif',color:a.finalDelta<0?'#4d8fff':'#ff4444'}}>{a.finalDelta>0?'+':''}{Math.round(a.finalDelta)}</div>
+            <div style={{fontSize:'11px',color:'#555'}}>→ {Math.round(a.resultingDopamine)}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+function CalendarScreen({ data }) {
+  const [view, setView] = useState(new Date());
+  const [sel, setSel] = useState(null);
+  const year=view.getFullYear(),month=view.getMonth();
+  const daysInMonth=new Date(year,month+1,0).getDate(),firstDay=new Date(year,month,1).getDay();
+  const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function getDayData(day){const str=`${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;const acts=data.activities.filter(a=>a.date===str);if(!acts.length)return null;const avg=acts.reduce((s,a)=>s+a.resultingDopamine,0)/acts.length;return{inRange:avg>=data.targetMin&&avg<=data.targetMax,acts};}
+  const selStr=sel?`${year}-${String(month+1).padStart(2,'0')}-${String(sel).padStart(2,'0')}`:null;
+  const selActs=selStr?data.activities.filter(a=>a.date===selStr):[];
+  function fmtTime(ts){const d=new Date(ts);return`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
+  return (
+    <div style={{ padding:'28px 24px 120px' }}>
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'24px' }}>
+        <div style={{fontSize:'30px',fontWeight:'800',fontFamily:'Syne, sans-serif'}}>{MONTHS[month]} {year}</div>
+        <div style={{display:'flex',gap:'8px'}}>
+          <button onClick={()=>setView(new Date(year,month-1,1))} style={{color:'#fff',fontSize:'20px',padding:'6px 12px',background:'#161616',borderRadius:'10px',border:'1px solid #222'}}>‹</button>
+          <button onClick={()=>setView(new Date(year,month+1,1))} style={{color:'#fff',fontSize:'20px',padding:'6px 12px',background:'#161616',borderRadius:'10px',border:'1px solid #222'}}>›</button>
+        </div>
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',marginBottom:'8px'}}>
+        {['S','M','T','W','T','F','S'].map((d,i)=><div key={i} style={{textAlign:'center',fontSize:'11px',color:'#444',padding:'4px 0'}}>{d}</div>)}
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'4px',marginBottom:'24px'}}>
+        {Array(firstDay).fill(null).map((_,i)=><div key={`e${i}`}/>)}
+        {Array(daysInMonth).fill(null).map((_,i)=>{
+          const day=i+1,dd=getDayData(day),isSel=sel===day;
+          const isToday=new Date().getDate()===day&&new Date().getMonth()===month&&new Date().getFullYear()===year;
+          return <button key={day} onClick={()=>setSel(isSel?null:day)} style={{aspectRatio:'1',borderRadius:'10px',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:'3px',background:isSel?'#fff':dd?(dd.inRange?'#0d1f10':'#1f0d0d'):'#141414',border:isToday?'1px solid #444':'1px solid transparent',cursor:'pointer'}}>
+            <span style={{fontSize:'13px',fontWeight:isToday?'700':'400',color:isSel?'#000':'#fff'}}>{day}</span>
+            {dd&&<div style={{width:'4px',height:'4px',borderRadius:'50%',background:dd.inRange?'#44ff88':'#ff4444'}}/>}
+          </button>;
+        })}
+      </div>
+      {sel&&<div>
+        <div style={{fontSize:'12px',color:'#555',letterSpacing:'0.1em',fontFamily:'Syne, sans-serif',marginBottom:'12px'}}>{MONTHS[month].toUpperCase()} {sel}</div>
+        {selActs.length===0&&<div style={{fontSize:'13px',color:'#555',textAlign:'center',padding:'20px 0'}}>No data.</div>}
+        {selActs.map(a=><div key={a.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'14px 0',borderBottom:'1px solid #161616'}}>
+          <div><div style={{fontSize:'14px',fontWeight:'500'}}>{a.activityText}</div><div style={{fontSize:'11px',color:'#555',marginTop:'2px'}}>{fmtTime(a.timestamp)} · {a.durationMinutes} min</div></div>
+          <div style={{fontSize:'20px',fontWeight:'800',fontFamily:'Syne, sans-serif',color:a.finalDelta<0?'#4d8fff':'#ff4444'}}>{a.finalDelta>0?'+':''}{Math.round(a.finalDelta)}</div>
+        </div>)}
+      </div>}
+    </div>
+  );
+}
+function SettingsScreen({ data, setData }) {
+  const [minVal, setMinVal] = useState(String(data.targetMin));
+  const [maxVal, setMaxVal] = useState(String(data.targetMax));
+  const [saved, setSaved] = useState(false);
+  function saveTarget(){const mn=parseInt(minVal),mx=parseInt(maxVal);if(isNaN(mn)||isNaN(mx)||mn>=mx)return;const nd={...data,targetMin:mn,targetMax:mx};setData(nd);setSaved(true);setTimeout(()=>setSaved(false),1500);}
+  function resetDopa(){if(!confirm('Reset to 5?'))return;setData({...data,dopamine:5});}
+  function resetFlames(){if(!confirm('Reset flames?'))return;setData({...data,flames:0});}
+  const inp={background:'#1a1a1a',border:'1px solid #252525',color:'#fff',padding:'13px 14px',fontSize:'15px',borderRadius:'12px',width:'82px'};
+  return (
+    <div style={{ padding:'28px 24px 120px' }}>
+      <div style={{fontSize:'30px',fontWeight:'800',fontFamily:'Syne, sans-serif',marginBottom:'28px'}}>Settings</div>
+      <div style={{background:'#111',borderRadius:'18px',padding:'20px',border:'1px solid #1c1c1c',marginBottom:'14px'}}>
+        <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',marginBottom:'14px',fontFamily:'Syne, sans-serif'}}>PROFILE</div>
+        <div style={{display:'flex',gap:'20px',flexWrap:'wrap'}}>
+          {[['Name',data.profile?.name],['Gender',data.profile?.gender],['Age',data.profile?.age+'y'],['Weight',data.profile?.weight+'kg']].map(([k,v])=>(
+            <div key={k}><div style={{fontSize:'10px',color:'#555',marginBottom:'2px'}}>{k}</div><div style={{fontSize:'16px',fontWeight:'700',fontFamily:'Syne, sans-serif'}}>{v}</div></div>
+          ))}
+        </div>
+      </div>
+      <div style={{background:'#111',borderRadius:'18px',padding:'20px',border:'1px solid #1c1c1c',marginBottom:'14px'}}>
+        <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',marginBottom:'14px',fontFamily:'Syne, sans-serif'}}>TARGET RANGE</div>
+        <div style={{display:'flex',gap:'10px',alignItems:'center'}}>
+          <input value={minVal} onChange={e=>setMinVal(e.target.value)} type="number" style={inp}/>
+          <span style={{color:'#555',fontSize:'18px'}}>—</span>
+          <input value={maxVal} onChange={e=>setMaxVal(e.target.value)} type="number" style={inp}/>
+          <button onClick={saveTarget} style={{flex:1,padding:'13px',background:'#fff',color:'#000',borderRadius:'12px',fontSize:'13px',fontWeight:'800',fontFamily:'Syne, sans-serif'}}>{saved?'✓':'SAVE'}</button>
+        </div>
+      </div>
+      <div style={{background:'#111',borderRadius:'18px',padding:'20px',border:'1px solid #1c1c1c',marginBottom:'14px'}}>
+        <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',marginBottom:'14px',fontFamily:'Syne, sans-serif'}}>RESET</div>
+        <div style={{display:'flex',gap:'10px'}}>
+          <button onClick={resetDopa} style={{flex:1,padding:'13px',background:'#1a1a1a',color:'#ff4444',borderRadius:'12px',fontSize:'12px',fontWeight:'700',fontFamily:'Syne, sans-serif',border:'1px solid #252525'}}>DOPAMINE</button>
+          <button onClick={resetFlames} style={{flex:1,padding:'13px',background:'#1a1a1a',color:'#ff4444',borderRadius:'12px',fontSize:'12px',fontWeight:'700',fontFamily:'Syne, sans-serif',border:'1px solid #252525'}}>FLAMES 🔥</button>
+        </div>
+      </div>
+      <div style={{background:'#111',borderRadius:'18px',padding:'20px',border:'1px solid #1c1c1c',fontSize:'13px',color:'#555',lineHeight:'1.7'}}>
+        <div style={{fontWeight:'700',color:'#777',marginBottom:'8px',fontFamily:'Syne, sans-serif',fontSize:'14px'}}>Dopa-AI v1.0</div>
+        A symbolic self-control tracker. Not a medical tool. All data is stored locally on your device only. No cloud. No login.
+      </div>
+    </div>
+  );
+}
+function Nav({ screen, setScreen }) {
+  const tabs=[{id:'home',label:'HOME',icon:'◉'},{id:'history',label:'LOG',icon:'≡'},{id:'calendar',label:'CAL',icon:'◫'},{id:'settings',label:'SET',icon:'⚙'}];
+  return (
+    <div style={{position:'fixed',bottom:0,left:'50%',transform:'translateX(-50%)',width:'100%',maxWidth:'430px',background:'rgba(10,10,10,0.96)',backdropFilter:'blur(20px)',borderTop:'1px solid #1a1a1a',display:'flex',zIndex:100,paddingBottom:'env(safe-area-inset-bottom)'}}>
+      {tabs.map(({id,label,icon})=>{const active=screen===id;return<button key={id} onClick={()=>setScreen(id)} style={{flex:1,padding:'14px 0 10px',display:'flex',flexDirection:'column',alignItems:'center',gap:'4px',color:active?'#fff':'#3a3a3a'}}><span style={{fontSize:'18px'}}>{icon}</span><span style={{fontSize:'9px',letterSpacing:'0.1em',fontFamily:'Syne, sans-serif',fontWeight:active?'700':'400'}}>{label}</span></button>;})}
+    </div>
+  );
+}
+function App() {
+  const [data, setData] = useState(()=>hydrate());
+  const [screen, setScreen] = useState('home');
+  const [installPrompt, setInstallPrompt] = useState(null);
+  const [showInstallScreen, setShowInstallScreen] = useState(false);
+
+  useEffect(()=>{const h=e=>{e.preventDefault();setInstallPrompt(e);};window.addEventListener('beforeinstallprompt',h);return()=>window.removeEventListener('beforeinstallprompt',h);},[]);
+  useEffect(()=>{const t=setInterval(()=>{const today=todayStr();setData(prev=>{if(!prev||prev.lastReset!==today){const nd=prev?{...prev,dopamine:DEFAULT_DOPA,lastReset:today}:null;if(nd)save(nd);return nd;}return prev;});},60000);return()=>clearInterval(t);},[]);
+
+  const updateData=d=>{setData(d);save(d);};
+
+  if(!data && !showInstallScreen) {
+    return <Onboarding onDone={profile=>{
+      const nd=initData(profile); save(nd); setData(nd);
+      setShowInstallScreen(true);
+    }}/>;
+  }
+
+  if(showInstallScreen) {
+    return <InstallScreen
+      installPrompt={installPrompt}
+      onInstall={()=>setShowInstallScreen(false)}
+      onSkip={()=>setShowInstallScreen(false)}
+    />;
+  }
+
+  return (
+    <div style={{background:'#0a0a0a',color:'#fff',minHeight:'100vh',maxWidth:'430px',margin:'0 auto',fontFamily:"'Inter',sans-serif"}}>
+      {screen==='home'&&<HomeScreen data={data} setData={updateData} installPrompt={installPrompt} setInstallPrompt={setInstallPrompt}/>}
+      {screen==='history'&&<HistoryScreen data={data}/>}
+      {screen==='calendar'&&<CalendarScreen data={data}/>}
+      {screen==='settings'&&<SettingsScreen data={data} setData={updateData}/>}
+      <Nav screen={screen} setScreen={setScreen}/>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

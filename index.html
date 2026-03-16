@@ -47,7 +47,7 @@ function clamp(v,lo,hi) { return Math.max(lo,Math.min(hi,v)); }
 function matchActivity(text) { const lower=text.toLowerCase(); for(const cat of CATEGORIES) for(const word of cat.words) if(lower.includes(word)) return cat.delta; return +3; }
 function load() { try { const r=localStorage.getItem(STORAGE_KEY); return r?JSON.parse(r):null; } catch { return null; } }
 function save(d) { try { localStorage.setItem(STORAGE_KEY,JSON.stringify(d)); } catch {} }
-function initData(profile) { return { profile, dopamine:DEFAULT_DOPA, lastReset:todayStr(), activities:[], flames:0, targetMin:20, targetMax:40 }; }
+function initData(profile) { return { profile, dopamine:DEFAULT_DOPA, lastReset:todayStr(), activities:[], flames:0, targetMin:20, targetMax:40, entrepreneurMode:false }; }
 function hydrate() {
   let d=load(); if(!d) return null;
   const today=todayStr();
@@ -150,10 +150,11 @@ function HomeScreen({ data, setData, installPrompt, setInstallPrompt }) {
     const m=parseFloat(mins)||30;
     const baseDelta=matchActivity(trimmed);
     const finalDelta=Math.round(baseDelta*Math.min(m/30,2.0)*10)/10;
-    const newDopa=clamp(Math.round((data.dopamine+finalDelta)*10)/10,1,100);
+    const max=data.entrepreneurMode?25:100;
+const newDopa=clamp(Math.round((data.dopamine+finalDelta)*10)/10,1,max);
     const entry={id:Date.now(),activityText:trimmed,durationMinutes:m,baseDelta,finalDelta,resultingDopamine:newDopa,timestamp:new Date().toISOString(),date:todayStr()};
     const nd={...data,dopamine:newDopa,activities:[...data.activities,entry]};
-    setData(nd); setText(''); setMins(''); setFlash(finalDelta); setTimeout(()=>setFlash(null),1500);
+    setData(nd); setText(''); setMins(''); setFlash(finalDelta);if(data.entrepreneurMode&&newDopa>=25)alert('YOUR LIFE DEPENDS ON YOUR ACTIONS.'); setTimeout(()=>setFlash(null),1500);
   }
   const dopaColor = data.dopamine<=30?'#4d8fff':data.dopamine<=60?'#fff':'#ff4444';
   const todayActs = data.activities.filter(a=>a.date===todayStr());
@@ -187,7 +188,7 @@ function HomeScreen({ data, setData, installPrompt, setInstallPrompt }) {
         </div>
         <div style={{ display:'flex', justifyContent:'space-between', marginTop:'8px' }}>
           <span style={{ fontSize:'10px', color:'#333' }}>1</span>
-          <span style={{ fontSize:'10px', color:'#444' }}>TARGET {data.targetMin}–{data.targetMax}</span>
+          <span style={{ fontSize:'10px', color:'#444' }}>{data.entrepreneurMode?'ENTREPRENEUR 0–25':`TARGET ${data.targetMin}–${data.targetMax}`}</span>
           <span style={{ fontSize:'10px', color:'#333' }}>100</span>
         </div>
       </div>
@@ -316,6 +317,15 @@ function SettingsScreen({ data, setData }) {
           <button onClick={saveTarget} style={{flex:1,padding:'13px',background:'#fff',color:'#000',borderRadius:'12px',fontSize:'13px',fontWeight:'800',fontFamily:'Syne, sans-serif'}}>{saved?'✓':'SAVE'}</button>
         </div>
       </div>
+     <div style={{background:'#111',borderRadius:'18px',padding:'20px',border:'1px solid #1c1c1c',marginBottom:'14px'}}>
+  <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',marginBottom:'14px',fontFamily:'Syne, sans-serif'}}>ENTREPRENEUR MODE</div>
+  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+    <span style={{fontSize:'13px',color:'#aaa'}}>Dopamine range 0–25</span>
+    <button onClick={()=>setData({...data,entrepreneurMode:!data.entrepreneurMode})} style={{padding:'10px 20px',background:data.entrepreneurMode?'#fff':'#1a1a1a',color:data.entrepreneurMode?'#000':'#666',borderRadius:'12px',fontSize:'13px',fontWeight:'700',fontFamily:'Syne, sans-serif',border:'1px solid #252525'}}>
+      {data.entrepreneurMode ? 'ON' : 'OFF'}
+    </button>
+  </div>
+</div>
       <div style={{background:'#111',borderRadius:'18px',padding:'20px',border:'1px solid #1c1c1c',marginBottom:'14px'}}>
         <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',marginBottom:'14px',fontFamily:'Syne, sans-serif'}}>RESET</div>
         <div style={{display:'flex',gap:'10px'}}>

@@ -44,10 +44,28 @@ const CATEGORIES = [
 ];
 function todayStr() { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 function clamp(v,lo,hi) { return Math.max(lo,Math.min(hi,v)); }
-function matchActivity(text) { const lower=text.toLowerCase(); for(const cat of CATEGORIES) for(const word of cat.words) if(lower.includes(word)) return cat.delta; return +3; }
+const LEVELS = [
+  {level:1, title:'Civilian', xpNeeded:0},
+  {level:2, title:'Beginner', xpNeeded:100},
+  {level:3, title:'Focused', xpNeeded:250},
+  {level:4, title:'Disciplined', xpNeeded:500},
+  {level:5, title:'Warrior', xpNeeded:1000},
+  {level:6, title:'Elite', xpNeeded:2000},
+  {level:7, title:'Master', xpNeeded:3500},
+  {level:8, title:'Legend', xpNeeded:5000},
+  {level:9, title:'Monk', xpNeeded:7500},
+  {level:10, title:'Entrepreneur', xpNeeded:10000},
+];
+function getLevel(xp) {
+  let current = LEVELS[0];
+  for(const l of LEVELS) { if(xp >= l.xpNeeded) current = l; }
+  const nextIdx = LEVELS.findIndex(l=>l.level===current.level)+1;
+  const next = LEVELS[nextIdx] || null;
+  return { ...current, next, xp };
+}function matchActivity(text) { const lower=text.toLowerCase(); for(const cat of CATEGORIES) for(const word of cat.words) if(lower.includes(word)) return cat.delta; return +3; }
 function load() { try { const r=localStorage.getItem(STORAGE_KEY); return r?JSON.parse(r):null; } catch { return null; } }
 function save(d) { try { localStorage.setItem(STORAGE_KEY,JSON.stringify(d)); } catch {} }
-function initData(profile) { return { profile, dopamine:DEFAULT_DOPA, lastReset:todayStr(), activities:[], flames:0, targetMin:20, targetMax:40, entrepreneurMode:false }; }
+function initData(profile) { return { profile, dopamine:DEFAULT_DOPA, lastReset:todayStr(), activities:[], flames:0, targetMin:20, targetMax:40, entrepreneurMode:false, xp:0, level:1 }; }
 function hydrate() {
   let d=load(); if(!d) return null;
   const today=todayStr();
@@ -153,7 +171,9 @@ function HomeScreen({ data, setData, installPrompt, setInstallPrompt }) {
     const max=data.entrepreneurMode?25:100;
 const newDopa=clamp(Math.round((data.dopamine+finalDelta)*10)/10,1,max);
     const entry={id:Date.now(),activityText:trimmed,durationMinutes:m,baseDelta,finalDelta,resultingDopamine:newDopa,timestamp:new Date().toISOString(),date:todayStr()};
-    const nd={...data,dopamine:newDopa,activities:[...data.activities,entry]};
+   const xpGain = finalDelta < 0 ? Math.round(Math.abs(finalDelta) * 2) : 0;
+const newXp = (data.xp||0) + xpGain;
+const nd={...data,dopamine:newDopa,activities:[...data.activities,entry],xp:newXp,level:getLevel(newXp).level};
     setData(nd); setText(''); setMins(''); setFlash(finalDelta);if(data.entrepreneurMode&&newDopa>=25){const el=document.createElement('div');el.innerText='YOUR LIFE DEPENDS ON YOUR ACTIONS.';el.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;font-size:28px;font-weight:800;font-family:Syne,sans-serif;z-index:9999;padding:40px;letter-spacing:0.05em;opacity:0;transition:opacity 0.5s ease;';document.body.appendChild(el);setTimeout(()=>el.style.opacity='1',10);setTimeout(()=>{el.style.opacity='0';setTimeout(()=>el.remove(),500);},3000);} setTimeout(()=>setFlash(null),1500);
   }
   const dopaColor = data.dopamine<=30?'#4d8fff':data.dopamine<=60?'#fff':'#ff4444';
@@ -161,7 +181,28 @@ const newDopa=clamp(Math.round((data.dopamine+finalDelta)*10)/10,1,max);
   const greeting = data.profile?.name ? `Hey, ${data.profile.name}.` : 'Hey.';
   return (
     <div style={{ padding:'28px 24px 120px' }}>
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'32px' }}>
+     {(()=>{const lvl=getLevel(data.xp||0);const pct=lvl.next?Math.round(((data.xp-lvl.xpNeeded)/(lvl.next.xpNeeded-lvl.xpNeeded))*100):100;return(
+<div style={{background:'#111',borderRadius:'22px',padding:'20px 24px',marginBottom:'16px',border:'1px solid #1c1c1c'}}>
+  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'10px'}}>
+    <div>
+      <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',fontFamily:'Syne, sans-serif'}}>LEVEL {lvl.level}</div>
+      <div style={{fontSize:'24px',fontWeight:'800',fontFamily:'Syne, sans-serif'}}>{lvl.title}</div>
+    </div>
+    <div style={{textAlign:'right'}}>
+      <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.1em',fontFamily:'Syne, sans-serif'}}>XP</div>
+      <div style={{fontSize:'24px',fontWeight:'800',fontFamily:'Syne, sans-serif',color:'#4d8fff'}}>{data.xp||0}</div>
+    </div>
+  </div>
+  <div style={{height:'4px',background:'#1c1c1c',borderRadius:'2px',overflow:'hidden'}}>
+    <div style={{height:'100%',width:`${pct}%`,background:'#4d8fff',borderRadius:'2px',transition:'width 0.4s ease'}}/>
+  </div>
+  <div style={{display:'flex',justifyContent:'space-between',marginTop:'6px'}}>
+    <span style={{fontSize:'10px',color:'#333'}}>{lvl.xpNeeded} XP</span>
+    {lvl.next&&<span style={{fontSize:'10px',color:'#444'}}>Next: {lvl.next.title} at {lvl.next.xpNeeded} XP</span>}
+    {!lvl.next&&<span style={{fontSize:'10px',color:'#4d8fff'}}>MAX LEVEL</span>}
+  </div>
+</div>
+);})()} <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'32px' }}>
         <div>
           <div style={{ fontSize:'24px', fontWeight:'800', fontFamily:'Syne, sans-serif' }}>{greeting}</div>
           <div style={{ fontSize:'13px', color:'#555', marginTop:'3px' }}>{data.profile?.gender} · {data.profile?.age}y · {data.profile?.weight}kg</div>

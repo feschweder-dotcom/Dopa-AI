@@ -249,19 +249,6 @@ const nd={...data,dopamine:newDopa,activities:[...data.activities,entry],xp:newX
           <button onClick={handleAdd} style={{ flex:1, background:'#fff', color:'#000', padding:'15px', borderRadius:'12px', fontSize:'14px', fontWeight:'800', fontFamily:'Syne, sans-serif', letterSpacing:'0.05em' }}>ADD</button>
         </div>
       </div>
-      {todayActs.length>0 && (
-        <div>
-          <div style={{ fontSize:'11px', color:'#444', letterSpacing:'0.15em', fontFamily:'Syne, sans-serif', marginBottom:'10px', marginTop:'6px' }}>TODAY</div>
-          {todayActs.slice(-4).reverse().map(a=>(
-            <div key={a.id} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'15px 18px', background:'#111', borderRadius:'16px', marginBottom:'8px', border:'1px solid #1c1c1c' }}>
-              <div>
-                <div style={{ fontSize:'14px', fontWeight:'500' }}>{a.activityText}</div>
-                <div style={{ fontSize:'11px', color:'#555', marginTop:'2px' }}>{a.durationMinutes} min</div>
-              </div>
-              <div style={{ fontSize:'22px', fontWeight:'800', fontFamily:'Syne, sans-serif', color:a.finalDelta<0?'#4d8fff':'#ff4444' }}>{a.finalDelta>0?'+':''}{Math.round(a.finalDelta)}</div>
-            </div>
-          ))}
-        </div>
       )}
     </div>
   );

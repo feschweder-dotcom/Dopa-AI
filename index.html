@@ -249,7 +249,26 @@ const nd={...data,dopamine:newDopa,activities:[...data.activities,entry],xp:newX
           <button onClick={handleAdd} style={{ flex:1, background:'#fff', color:'#000', padding:'15px', borderRadius:'12px', fontSize:'14px', fontWeight:'800', fontFamily:'Syne, sans-serif', letterSpacing:'0.05em' }}>ADD</button>
         </div>
       </div>
-      )}
+  )}
+      <div style={{background:'#111',borderRadius:'22px',padding:'20px',border:'1px solid #1c1c1c',marginTop:'14px'}}>
+  <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',fontFamily:'Syne, sans-serif',marginBottom:'10px'}}>RECOMMENDATION</div>
+  <div style={{fontSize:'14px',color:'#aaa',lineHeight:'1.7'}}>
+    {(()=>{
+      const acts = data.activities.filter(a=>a.date===todayStr());
+      const avg = acts.length ? acts.reduce((s,a)=>s+a.finalDelta,0)/acts.length : 0;
+      const hasGym = acts.some(a=>['gym','workout','run','exercise','swim','bike','walk'].some(w=>a.activityText.toLowerCase().includes(w)));
+      const hasWork = acts.some(a=>['work','study','code','learn','write'].some(w=>a.activityText.toLowerCase().includes(w)));
+      const hasMedian = acts.some(a=>['tiktok','instagram','netflix','gaming','shorts'].some(w=>a.activityText.toLowerCase().includes(w)));
+      if(acts.length===0) return "You haven't logged anything yet today. Start with something productive!";
+      if(data.dopamine>=60) return "⚠️ Your dopamine is very high. Try meditating, working out or doing something productive to bring it down.";
+      if(data.dopamine<=15) return "💪 Your dopamine is very low — you are in a great focused state. Keep going!";
+      if(!hasGym) return "🏋️ You haven't worked out today. A workout will sharpen your focus significantly.";
+      if(!hasWork) return "📚 You haven't done any productive work today. Now is a good time to study or work.";
+      if(hasMedian && data.dopamine>40) return "📵 You've consumed high stimulation content today. Try a walk or cold shower to reset.";
+      return "✅ You're doing well today. Stay consistent and avoid high dopamine distractions!";
+    })()}
+  </div>
+</div>
     </div>
   );
 }

@@ -272,17 +272,19 @@ const nd={...data,dopamine:newDopa,activities:[...data.activities,entry],xp:newX
     {(()=>{
       const acts=data.activities.filter(a=>a.date===todayStr());
       const hasHigh=acts.some(a=>a.baseDelta>=12);
-      const hasWork=acts.some(a=>['work','study','code','learn','write','read'].some(w=>a.activityText.toLowerCase().includes(w)));
+     const hasWork=acts.some(a=>['code','coding','program','programming','build','building','design','designing','study','studying','learn','learning','practice','practicing','create','creating','research','researching','write','writing'].some(w=>a.activityText.toLowerCase().includes(w)));
       const hasGym=acts.some(a=>['gym','workout','run','exercise','swim','walk','sport','football','basketball'].some(w=>a.activityText.toLowerCase().includes(w)));
       const hasMind=acts.some(a=>['meditate','meditation','yoga','journal','breathe','sauna'].some(w=>a.activityText.toLowerCase().includes(w)));
       const suggestions=[];
-      if(!hasWork) suggestions.push({icon:'📚',text:'Do some work or study'});
-      if(!hasGym) suggestions.push({icon:'🏋️',text:'Work out or go for a run'});
-      if(!hasMind) suggestions.push({icon:'🧘',text:'Meditate or journal'});
-      if(hasHigh&&!hasWork) suggestions.push({icon:'💻',text:'Code or learn something new'});
-      if(hasHigh&&!hasGym) suggestions.push({icon:'🚴',text:'Go cycling or take a walk'});
-      if(data.dopamine>50) suggestions.push({icon:'🚿',text:'Take a cold shower'});
-      if(data.dopamine>50) suggestions.push({icon:'📖',text:'Read a book'});
+      if(!hasWork){
+        suggestions.push({icon:'📚',text:'Do some work or study'});
+        suggestions.push({icon:'💻',text:'Code or learn something new'});
+        suggestions.push({icon:'✍️',text:'Write or plan your goals'});
+      } else {
+        suggestions.push({icon:'🏋️',text:'Work out or go for a run'});
+        suggestions.push({icon:'🚴',text:'Go cycling or take a walk'});
+        suggestions.push({icon:'🧘',text:'Meditate or journal'});
+      }
       const top=suggestions.slice(0,3);
       if(top.length===0) return <div style={{fontSize:'13px',color:'#555'}}>You've covered all bases today! 💪</div>;
       return top.map((s,i)=>(

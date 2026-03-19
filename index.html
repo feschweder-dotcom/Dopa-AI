@@ -176,7 +176,7 @@ function HomeScreen({ data, setData, installPrompt, setInstallPrompt }) {
     const trimmed=text.trim(); if(!trimmed) return;
     const m=parseFloat(mins)||30;
     const baseDelta=matchActivity(trimmed);
-    const finalDelta=Math.round(baseDelta*Math.min(m/30,2.0)*10)/10;
+    const finalDelta=Math.round(baseDelta*Math.min(m/30,4.0)*10)/10;
     const max=data.entrepreneurMode?25:100;
 const newDopa=clamp(Math.round((data.dopamine+finalDelta)*10)/10,1,max);
     const entry={id:Date.now(),activityText:trimmed,durationMinutes:m,baseDelta,finalDelta,resultingDopamine:newDopa,timestamp:new Date().toISOString(),date:todayStr()};

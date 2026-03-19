@@ -264,7 +264,36 @@ const nd={...data,dopamine:newDopa,activities:[...data.activities,entry],xp:newX
       if(!hasGym) return "🏋️ You haven't worked out today. A workout will sharpen your focus significantly.";
       if(!hasWork) return "📚 You haven't done any productive work today. Now is a good time to study or work.";
       if(hasMedian && data.dopamine>40) return "📵 You've consumed high stimulation content today. Try a walk or cold shower to reset.";
-      return "✅ You're doing well today. Stay consistent and avoid high dopamine distractions!";
+     return "✅ You're doing well today. Stay consistent and avoid high dopamine distractions!";
+    })()}
+  </div>
+  <div style={{marginTop:'16px',borderTop:'1px solid #1c1c1c',paddingTop:'16px'}}>
+    <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',fontFamily:'Syne, sans-serif',marginBottom:'12px'}}>TRY NEXT</div>
+    {(()=>{
+      const acts=data.activities.filter(a=>a.date===todayStr());
+      const hasHigh=acts.some(a=>a.baseDelta>=12);
+      const hasWork=acts.some(a=>['work','study','code','learn','write','read'].some(w=>a.activityText.toLowerCase().includes(w)));
+      const hasGym=acts.some(a=>['gym','workout','run','exercise','swim','walk','sport','football','basketball'].some(w=>a.activityText.toLowerCase().includes(w)));
+      const hasMind=acts.some(a=>['meditate','meditation','yoga','journal','breathe','sauna'].some(w=>a.activityText.toLowerCase().includes(w)));
+      const suggestions=[];
+      if(!hasWork) suggestions.push({icon:'📚',text:'Do some work or study'});
+      if(!hasGym) suggestions.push({icon:'🏋️',text:'Work out or go for a run'});
+      if(!hasMind) suggestions.push({icon:'🧘',text:'Meditate or journal'});
+      if(hasHigh&&!hasWork) suggestions.push({icon:'💻',text:'Code or learn something new'});
+      if(hasHigh&&!hasGym) suggestions.push({icon:'🚴',text:'Go cycling or take a walk'});
+      if(data.dopamine>50) suggestions.push({icon:'🚿',text:'Take a cold shower'});
+      if(data.dopamine>50) suggestions.push({icon:'📖',text:'Read a book'});
+      const top=suggestions.slice(0,3);
+      if(top.length===0) return <div style={{fontSize:'13px',color:'#555'}}>You've covered all bases today! 💪</div>;
+      return top.map((s,i)=>(
+        <div key={i} style={{display:'flex',alignItems:'center',gap:'12px',padding:'10px 0',borderBottom:i<top.length-1?'1px solid #1c1c1c':'none'}}>
+          <span style={{fontSize:'20px'}}>{s.icon}</span>
+          <div>
+            <div style={{fontSize:'11px',color:'#555',fontFamily:'Syne, sans-serif'}}>{i+1}.</div>
+            <div style={{fontSize:'13px',color:'#aaa'}}>{s.text}</div>
+          </div>
+        </div>
+      ));
     })()}
   </div>
 </div>

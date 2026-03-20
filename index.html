@@ -74,7 +74,7 @@ function getLevel(xp) {
 }function matchActivity(text) { const lower=text.toLowerCase(); for(const cat of CATEGORIES) for(const word of cat.words) if(lower.includes(word)) return cat.delta; return +3; }
 function load() { try { const r=localStorage.getItem(STORAGE_KEY); return r?JSON.parse(r):null; } catch { return null; } }
 function save(d) { try { localStorage.setItem(STORAGE_KEY,JSON.stringify(d)); } catch {} }
-function initData(profile) { return { profile, dopamine:DEFAULT_DOPA, lastReset:todayStr(), activities:[], flames:0, targetMin:20, targetMax:40, entrepreneurMode:false, xp:0, level:1 }; }
+function initData(profile) { return { profile, dopamine:DEFAULT_DOPA, lastReset:todayStr(), activities:[], flames:0, targetMin:20, targetMax:40, entrepreneurMode:false, xp:0, level:1, dailyGoal:null, lastGoalDate:null }; }
 function hydrate() {
   let d=load(); if(!d) return null;
   const today=todayStr();
@@ -167,7 +167,37 @@ function InstallScreen({ onInstall, onSkip, installPrompt }) {
     </div>
   );
 }
-
+function GoalScreen({ onDone, data }) {
+  const [activity, setActivity] = useState('');
+  const [minutes, setMinutes] = useState('');
+  const inp = { width:'100%', padding:'16px 20px', background:'#161616', border:'1px solid #222', borderRadius:'14px', color:'#fff', fontSize:'16px', marginTop:'10px', fontFamily:'inherit' };
+  const ready = activity.trim() && minutes;
+  return (
+    <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', justifyContent:'center', padding:'40px 28px' }}>
+      <div style={{ marginBottom:'44px' }}>
+        <div style={{ fontSize:'12px', color:'#444', letterSpacing:'0.2em', fontFamily:'Syne, sans-serif', marginBottom:'14px' }}>DOPA-AI</div>
+        <div style={{ fontSize:'36px', fontWeight:'800', fontFamily:'Syne, sans-serif', lineHeight:1.1, marginBottom:'12px' }}>Set your Goal<br/>for the Day.</div>
+        <div style={{ fontSize:'14px', color:'#555', lineHeight:1.6 }}>What do you want to accomplish today?</div>
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:'22px' }}>
+        <div>
+          <div style={{ fontSize:'11px', color:'#555', letterSpacing:'0.15em', fontFamily:'Syne, sans-serif' }}>ACTIVITY</div>
+          <input value={activity} onChange={e=>setActivity(e.target.value)} placeholder="e.g. Coding" style={inp}/>
+        </div>
+        <div>
+          <div style={{ fontSize:'11px', color:'#555', letterSpacing:'0.15em', fontFamily:'Syne, sans-serif' }}>MINUTES</div>
+          <input value={minutes} onChange={e=>setMinutes(e.target.value)} type="number" min="1" placeholder="e.g. 120" style={inp}/>
+        </div>
+      </div>
+      <button onClick={()=>ready&&onDone(activity.trim(), parseInt(minutes))} style={{ marginTop:'40px', width:'100%', padding:'19px', background:ready?'#fff':'#161616', color:ready?'#000':'#333', borderRadius:'16px', fontSize:'15px', fontWeight:'800', fontFamily:'Syne, sans-serif', letterSpacing:'0.05em' }}>
+        SET GOAL →
+      </button>
+      <button onClick={()=>onDone(null,null)} style={{ marginTop:'12px', width:'100%', padding:'16px', background:'transparent', color:'#444', borderRadius:'16px', fontSize:'14px', fontWeight:'500', fontFamily:'Syne, sans-serif' }}>
+        Skip for today
+      </button>
+    </div>
+  );
+}
 function HomeScreen({ data, setData, installPrompt, setInstallPrompt }) {
   const [text, setText] = useState('');
   const [mins, setMins] = useState('');
@@ -190,7 +220,30 @@ const nd={...data,dopamine:newDopa,activities:[...data.activities,entry],xp:newX
   const greeting = data.profile?.name ? `Hey, ${data.profile.name}.` : 'Hey.';
   return (
     <div style={{ padding:'28px 24px 120px' }}>
-     {(()=>{const lvl=getLevel(data.xp||0);const pct=lvl.next?Math.round(((data.xp-lvl.xpNeeded)/(lvl.next.xpNeeded-lvl.xpNeeded))*100):100;return(
+     {data.dailyGoal&&data.dailyGoal.activity&&(()=>{
+  const acts=data.activities.filter(a=>a.date===todayStr()&&a.activityText.toLowerCase().includes(data.dailyGoal.activity.toLowerCase()));
+  const doneMins=acts.reduce((s,a)=>s+a.durationMinutes,0);
+  const pct=Math.min((doneMins/data.dailyGoal.minutes)*100,100);
+  const done=doneMins>=data.dailyGoal.minutes;
+  return(
+    <div style={{background:'#111',borderRadius:'22px',padding:'20px 24px',marginBottom:'16px',border:`1px solid ${done?'#44ff88':'#1c1c1c'}`}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'10px'}}>
+        <div>
+          <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',fontFamily:'Syne, sans-serif'}}>TODAY'S GOAL</div>
+          <div style={{fontSize:'18px',fontWeight:'800',fontFamily:'Syne, sans-serif',marginTop:'2px'}}>{data.dailyGoal.activity}</div>
+        </div>
+        <div style={{textAlign:'right'}}>
+          <div style={{fontSize:'22px',fontWeight:'800',fontFamily:'Syne, sans-serif',color:done?'#44ff88':'#fff'}}>{doneMins}<span style={{fontSize:'13px',color:'#555',fontWeight:'400'}}> / {data.dailyGoal.minutes} min</span></div>
+        </div>
+      </div>
+      <div style={{height:'4px',background:'#1c1c1c',borderRadius:'2px',overflow:'hidden'}}>
+        <div style={{height:'100%',width:`${pct}%`,background:done?'#44ff88':'#fff',borderRadius:'2px',transition:'width 0.4s ease'}}/>
+      </div>
+      {done&&<div style={{fontSize:'12px',color:'#44ff88',marginTop:'8px',fontFamily:'Syne, sans-serif',fontWeight:'700'}}>✅ GOAL COMPLETED!</div>}
+    </div>
+  );
+})()}
+      {(()=>{const lvl=getLevel(data.xp||0);const pct=lvl.next?Math.round(((data.xp-lvl.xpNeeded)/(lvl.next.xpNeeded-lvl.xpNeeded))*100):100;return(
 <div style={{background:'#111',borderRadius:'22px',padding:'20px 24px',marginBottom:'16px',border:'1px solid #1c1c1c'}}>
   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'10px'}}>
     <div>
@@ -464,7 +517,12 @@ function App() {
       setShowInstallScreen(true);
     }}/>;
   }
-
+if(data && !data.dailyGoal && data.lastGoalDate !== todayStr()) {
+  return <GoalScreen data={data} onDone={(activity, minutes)=>{
+    const nd={...data, dailyGoal:activity?{activity,minutes}:null, lastGoalDate:todayStr()};
+    updateData(nd);
+  }}/>;
+}
   if(showInstallScreen) {
     return <InstallScreen
       installPrompt={installPrompt}

@@ -202,6 +202,16 @@ function HomeScreen({ data, setData, installPrompt, setInstallPrompt }) {
   const [text, setText] = useState('');
   const [mins, setMins] = useState('');
   const [flash, setFlash] = useState(null);
+  const [page, setPage] = useState(0);
+  const touchStartX = React.useRef(null);
+  function handleTouchStart(e) { touchStartX.current = e.touches[0].clientX; }
+  function handleTouchEnd(e) {
+    if(touchStartX.current === null) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if(diff > 50) setPage(1);
+    if(diff < -50) setPage(0);
+    touchStartX.current = null;
+  }
   function handleAdd() {
     const trimmed=text.trim(); if(!trimmed) return;
     const m=parseFloat(mins)||30;
@@ -243,28 +253,7 @@ const nd={...data,dopamine:newDopa,activities:[...data.activities,entry],xp:newX
     </div>
   );
 })()}
-      {(()=>{const lvl=getLevel(data.xp||0);const pct=lvl.next?Math.round(((data.xp-lvl.xpNeeded)/(lvl.next.xpNeeded-lvl.xpNeeded))*100):100;return(
-<div style={{background:'#111',borderRadius:'22px',padding:'20px 24px',marginBottom:'16px',border:'1px solid #1c1c1c'}}>
-  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'10px'}}>
-    <div>
-      <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',fontFamily:'Syne, sans-serif'}}>LEVEL {lvl.level}</div>
-      <div style={{fontSize:'24px',fontWeight:'800',fontFamily:'Syne, sans-serif'}}>{lvl.title}</div>
-    </div>
-    <div style={{textAlign:'right'}}>
-      <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.1em',fontFamily:'Syne, sans-serif'}}>XP</div>
-      <div style={{fontSize:'24px',fontWeight:'800',fontFamily:'Syne, sans-serif',color:'#4d8fff'}}>{data.xp||0}</div>
-    </div>
-  </div>
-  <div style={{height:'4px',background:'#1c1c1c',borderRadius:'2px',overflow:'hidden'}}>
-    <div style={{height:'100%',width:`${pct}%`,background:'#4d8fff',borderRadius:'2px',transition:'width 0.4s ease'}}/>
-  </div>
-  <div style={{display:'flex',justifyContent:'space-between',marginTop:'6px'}}>
-    <span style={{fontSize:'10px',color:'#333'}}>{lvl.xpNeeded} XP</span>
-    {lvl.next&&<span style={{fontSize:'10px',color:'#444'}}>Next: {lvl.next.title} at {lvl.next.xpNeeded} XP</span>}
-    {!lvl.next&&<span style={{fontSize:'10px',color:'#4d8fff'}}>MAX LEVEL</span>}
-  </div>
-</div>
-);})()} <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'32px' }}>
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'32px' }}>
         <div>
           <div style={{ fontSize:'24px', fontWeight:'800', fontFamily:'Syne, sans-serif' }}>{greeting}</div>
           <div style={{ fontSize:'13px', color:'#555', marginTop:'3px' }}>{data.profile?.gender} · {data.profile?.age}y · {data.profile?.weight}kg</div>
@@ -302,60 +291,85 @@ const nd={...data,dopamine:newDopa,activities:[...data.activities,entry],xp:newX
           <button onClick={handleAdd} style={{ flex:1, background:'#fff', color:'#000', padding:'15px', borderRadius:'12px', fontSize:'14px', fontWeight:'800', fontFamily:'Syne, sans-serif', letterSpacing:'0.05em' }}>ADD</button>
         </div>
       </div>
-      <div style={{background:'#111',borderRadius:'22px',padding:'20px',border:'1px solid #1c1c1c',marginTop:'14px'}}>
-  <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',fontFamily:'Syne, sans-serif',marginBottom:'10px'}}>RECOMMENDATION</div>
-  <div style={{fontSize:'14px',color:'#aaa',lineHeight:'1.7'}}>
-    {(()=>{
-      const acts = data.activities.filter(a=>a.date===todayStr());
-      const avg = acts.length ? acts.reduce((s,a)=>s+a.finalDelta,0)/acts.length : 0;
-      const hasGym = acts.some(a=>['gym','workout','run','exercise','swim','bike','walk'].some(w=>a.activityText.toLowerCase().includes(w)));
-      const hasWork = acts.some(a=>['work','study','code','learn','write'].some(w=>a.activityText.toLowerCase().includes(w)));
-      const hasMedian = acts.some(a=>['tiktok','instagram','netflix','gaming','shorts'].some(w=>a.activityText.toLowerCase().includes(w)));
-      if(acts.length===0) return "You haven't logged anything yet today. Start with something productive!";
-      if(data.dopamine>=60) return "⚠️ Your dopamine is very high. Try meditating, working out or doing something productive to bring it down.";
-      if(data.dopamine<=15) return "💪 Your dopamine is very low — you are in a great focused state. Keep going!";
-      if(!hasGym) return "🏋️ You haven't worked out today. A workout will sharpen your focus significantly.";
-      if(!hasWork) return "📚 You haven't done any productive work today. Now is a good time to study or work.";
-      if(hasMedian && data.dopamine>40) return "📵 You've consumed high stimulation content today. Try a walk or cold shower to reset.";
-     return "✅ You're doing well today. Stay consistent and avoid high dopamine distractions!";
-    })()}
   </div>
-  <div style={{marginTop:'16px',borderTop:'1px solid #1c1c1c',paddingTop:'16px'}}>
-    <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',fontFamily:'Syne, sans-serif',marginBottom:'12px'}}>TRY NEXT</div>
-    {(()=>{
-      const acts=data.activities.filter(a=>a.date===todayStr());
-      const hasHigh=acts.some(a=>a.baseDelta>=12);
-     const hasWork=acts.some(a=>['code','coding','program','programming','build','building','design','designing','study','studying','learn','learning','practice','practicing','create','creating','research','researching','write','writing'].some(w=>a.activityText.toLowerCase().includes(w)));
-      const hasGym=acts.some(a=>['gym','workout','run','exercise','swim','walk','sport','football','basketball'].some(w=>a.activityText.toLowerCase().includes(w)));
-      const hasMind=acts.some(a=>['meditate','meditation','yoga','journal','breathe','sauna'].some(w=>a.activityText.toLowerCase().includes(w)));
-      const suggestions=[];
-      if(!hasWork){
-        suggestions.push({icon:'📚',text:'Do some work or study'});
-        suggestions.push({icon:'💻',text:'Code or learn something new'});
-        suggestions.push({icon:'✍️',text:'Write or plan your goals'});
-      } else {
-        suggestions.push({icon:'🏋️',text:'Work out or go for a run'});
-        suggestions.push({icon:'🚴',text:'Go cycling or take a walk'});
-        suggestions.push({icon:'🧘',text:'Meditate or journal'});
-      }
-      const top=suggestions.slice(0,3);
-      if(top.length===0) return <div style={{fontSize:'13px',color:'#555'}}>You've covered all bases today! 💪</div>;
-      return top.map((s,i)=>(
-        <div key={i} style={{display:'flex',alignItems:'center',gap:'12px',padding:'10px 0',borderBottom:i<top.length-1?'1px solid #1c1c1c':'none'}}>
-          <span style={{fontSize:'20px'}}>{s.icon}</span>
-          <div>
-            <div style={{fontSize:'11px',color:'#555',fontFamily:'Syne, sans-serif'}}>{i+1}.</div>
-            <div style={{fontSize:'13px',color:'#aaa'}}>{s.text}</div>
+    <div style={{ minWidth:'100%', padding:'28px 24px 120px', flexShrink:0 }}>
+      <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',fontFamily:'Syne, sans-serif',marginBottom:'20px',textAlign:'center'}}>STATS & INSIGHTS</div>
+      {(()=>{const lvl=getLevel(data.xp||0);const pct=lvl.next?Math.round(((data.xp-lvl.xpNeeded)/(lvl.next.xpNeeded-lvl.xpNeeded))*100):100;return(
+        <div style={{background:'#111',borderRadius:'22px',padding:'20px 24px',marginBottom:'16px',border:'1px solid #1c1c1c'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'10px'}}>
+            <div>
+              <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',fontFamily:'Syne, sans-serif'}}>LEVEL {lvl.level}</div>
+              <div style={{fontSize:'24px',fontWeight:'800',fontFamily:'Syne, sans-serif'}}>{lvl.title}</div>
+            </div>
+            <div style={{textAlign:'right'}}>
+              <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.1em',fontFamily:'Syne, sans-serif'}}>XP</div>
+              <div style={{fontSize:'24px',fontWeight:'800',fontFamily:'Syne, sans-serif',color:'#4d8fff'}}>{data.xp||0}</div>
+            </div>
+          </div>
+          <div style={{height:'4px',background:'#1c1c1c',borderRadius:'2px',overflow:'hidden'}}>
+            <div style={{height:'100%',width:`${pct}%`,background:'#4d8fff',borderRadius:'2px',transition:'width 0.4s ease'}}/>
+          </div>
+          <div style={{display:'flex',justifyContent:'space-between',marginTop:'6px'}}>
+            <span style={{fontSize:'10px',color:'#333'}}>{lvl.xpNeeded} XP</span>
+            {lvl.next&&<span style={{fontSize:'10px',color:'#444'}}>Next: {lvl.next.title} at {lvl.next.xpNeeded} XP</span>}
+            {!lvl.next&&<span style={{fontSize:'10px',color:'#4d8fff'}}>MAX LEVEL</span>}
           </div>
         </div>
-      ));
-    })()}
-  </div>
-</div>
+      );})()} 
+      <div style={{background:'#111',borderRadius:'22px',padding:'20px',border:'1px solid #1c1c1c',marginTop:'14px'}}>
+        <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',fontFamily:'Syne, sans-serif',marginBottom:'10px'}}>RECOMMENDATION</div>
+        <div style={{fontSize:'14px',color:'#aaa',lineHeight:'1.7'}}>
+          {(()=>{
+            const acts=data.activities.filter(a=>a.date===todayStr());
+            const hasWork=acts.some(a=>['code','coding','program','programming','build','building','design','designing','study','studying','learn','learning','practice','practicing','create','creating','research','researching','write','writing'].some(w=>a.activityText.toLowerCase().includes(w)));
+            const hasGym=acts.some(a=>['gym','workout','run','exercise','swim','walk','sport','football','basketball'].some(w=>a.activityText.toLowerCase().includes(w)));
+            if(acts.length===0) return "You haven't logged anything yet today. Start with something productive!";
+            if(data.dopamine>=60) return "⚠️ Your dopamine is very high. Try meditating, working out or doing something productive to bring it down.";
+            if(data.dopamine<=15) return "💪 Your dopamine is very low — you are in a great focused state. Keep going!";
+            if(!hasWork) return "📚 You haven't done any productive work today. Now is a good time to study or work.";
+            if(!hasGym) return "🏋️ You haven't worked out today. A workout will sharpen your focus significantly.";
+            return "✅ You're doing well today. Stay consistent and avoid high dopamine distractions!";
+          })()}
+        </div>
+        <div style={{marginTop:'16px',borderTop:'1px solid #1c1c1c',paddingTop:'16px'}}>
+          <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',fontFamily:'Syne, sans-serif',marginBottom:'12px'}}>TRY NEXT</div>
+          {(()=>{
+            const acts=data.activities.filter(a=>a.date===todayStr());
+            const hasWork=acts.some(a=>['code','coding','program','programming','build','building','design','designing','study','studying','learn','learning','practice','practicing','create','creating','research','researching','write','writing'].some(w=>a.activityText.toLowerCase().includes(w)));
+            const suggestions=[];
+            if(!hasWork){
+              suggestions.push({icon:'📚',text:'Do some work or study'});
+              suggestions.push({icon:'💻',text:'Code or learn something new'});
+              suggestions.push({icon:'✍️',text:'Write or plan your goals'});
+            } else {
+              suggestions.push({icon:'🏋️',text:'Work out or go for a run'});
+              suggestions.push({icon:'🚴',text:'Go cycling or take a walk'});
+              suggestions.push({icon:'🧘',text:'Meditate or journal'});
+            }
+            const top=suggestions.slice(0,3);
+            return top.map((s,i)=>(
+              <div key={i} style={{display:'flex',alignItems:'center',gap:'12px',padding:'10px 0',borderBottom:i<top.length-1?'1px solid #1c1c1c':'none'}}>
+                <span style={{fontSize:'20px'}}>{s.icon}</span>
+                <div>
+                  <div style={{fontSize:'11px',color:'#555',fontFamily:'Syne, sans-serif'}}>{i+1}.</div>
+                  <div style={{fontSize:'13px',color:'#aaa'}}>{s.text}</div>
+                </div>
+              </div>
+            ));
+          })()}
+        </div>
+      </div>
+    </div>
+    </div>
+    </div>
+    <div style={{display:'flex',justifyContent:'center',gap:'6px',paddingBottom:'8px',marginTop:'-16px'}}>
+      <div style={{width:'6px',height:'6px',borderRadius:'50%',background:page===0?'#fff':'#333',transition:'background 0.2s'}}/>
+      <div style={{width:'6px',height:'6px',borderRadius:'50%',background:page===1?'#fff':'#333',transition:'background 0.2s'}}/>
     </div>
   );
 }
-function HistoryScreen({ data }) {
+function HistoryScreen   
+({ data }) {
   const [sel, setSel] = useState(todayStr());
   const dates=[...new Set(data.activities.map(a=>a.date))].sort((a,b)=>b.localeCompare(a));
   const acts=data.activities.filter(a=>a.date===sel).sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
@@ -437,7 +451,9 @@ function SettingsScreen({ data, setData }) {
   function resetFlames(){if(!confirm('Reset flames?'))return;setData({...data,flames:0});}
   const inp={background:'#1a1a1a',border:'1px solid #252525',color:'#fff',padding:'13px 14px',fontSize:'15px',borderRadius:'12px',width:'82px'};
   return (
-    <div style={{ padding:'28px 24px 120px' }}>
+    <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} style={{ overflow:'hidden', position:'relative' }}>
+    <div style={{ display:'flex', transition:'transform 0.3s ease', transform:`translateX(${page * -100}%)` }}>
+    <div style={{ minWidth:'100%', padding:'28px 24px 120px', flexShrink:0 }}>
       <div style={{fontSize:'30px',fontWeight:'800',fontFamily:'Syne, sans-serif',marginBottom:'28px'}}>Settings</div>
       <div style={{background:'#111',borderRadius:'18px',padding:'20px',border:'1px solid #1c1c1c',marginBottom:'24px'}}>
   <div style={{display:'flex',flexDirection:'column',gap:'14px'}}>

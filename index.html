@@ -530,7 +530,7 @@ if(data && !data.dailyGoal && data.lastGoalDate !== todayStr()) {
       onSkip={()=>setShowInstallScreen(false)}
     />;
   }
-
+  
   return (
     <div style={{background:'#0a0a0a',color:'#fff',minHeight:'100vh',maxWidth:'430px',margin:'0 auto',fontFamily:"'Inter',sans-serif"}}>
       {screen==='home'&&<HomeScreen data={data} setData={updateData} installPrompt={installPrompt} setInstallPrompt={setInstallPrompt}/>}

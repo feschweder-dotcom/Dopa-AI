@@ -176,8 +176,8 @@ function HomeScreen({data,setData,installPrompt,setInstallPrompt}){
   const greeting=data.profile?.name?`Hey, ${data.profile.name}.`:'Hey.';
   return(
    <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} style={{overflow:'hidden',position:'relative',width:'100%',maxWidth:'430px'}}>
-      <div style={{display:'flex',transition:'transform 0.3s ease',transform:`translateX(${page*-100}%)`}}>
-        <div style={{minWidth:'100%',padding:'28px 24px 120px',flexShrink:0}}>
+      <div style={{display:'flex',transition:'transform 0.3s ease',transform:`translateX(${page*-100}%)`,width:'200%'}}>
+        <div style={{minWidth:'50%',width:'50%',padding:'28px 24px 120px',flexShrink:0}}>
           {data.dailyGoal&&data.dailyGoal.activity&&(()=>{
             const acts=data.activities.filter(a=>a.date===todayStr()&&a.activityText.toLowerCase().includes(data.dailyGoal.activity.toLowerCase()));
             const doneMins=acts.reduce((s,a)=>s+a.durationMinutes,0);
@@ -222,7 +222,7 @@ function HomeScreen({data,setData,installPrompt,setInstallPrompt}){
             </div>
           </div>
         </div>
-        <div style={{minWidth:'100%',padding:'28px 24px 120px',flexShrink:0}}>
+        <div style={{minWidth:'50%',width:'50%',padding:'28px 24px 120px',flexShrink:0}}>
           <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',fontFamily:'Syne, sans-serif',marginBottom:'20px',textAlign:'center'}}>STATS & INSIGHTS</div>
           {(()=>{const lvl=getLevel(data.xp||0);const pct=lvl.next?Math.round(((data.xp-lvl.xpNeeded)/(lvl.next.xpNeeded-lvl.xpNeeded))*100):100;return(
             <div style={{background:'#111',borderRadius:'22px',padding:'20px 24px',marginBottom:'16px',border:'1px solid #1c1c1c'}}>

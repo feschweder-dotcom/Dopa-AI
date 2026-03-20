@@ -175,7 +175,7 @@ function HomeScreen({data,setData,installPrompt,setInstallPrompt}){
   const dopaColor=data.dopamine<=30?'#4d8fff':data.dopamine<=60?'#fff':'#ff4444';
   const greeting=data.profile?.name?`Hey, ${data.profile.name}.`:'Hey.';
   return(
-    <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} style={{overflow:'hidden',position:'relative'}}>
+   <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} style={{overflow:'hidden',position:'relative',width:'100%',maxWidth:'430px'}}>
       <div style={{display:'flex',transition:'transform 0.3s ease',transform:`translateX(${page*-100}%)`}}>
         <div style={{minWidth:'100%',padding:'28px 24px 120px',flexShrink:0}}>
           {data.dailyGoal&&data.dailyGoal.activity&&(()=>{

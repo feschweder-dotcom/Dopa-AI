@@ -4,20 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <title>Dopa-AI</title>
- <meta name="theme-color" content="#0a0a0a" />
+  <meta name="theme-color" content="#0a0a0a" />
   <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js');
-  }
-</script>
-<link rel="apple-touch-icon" href="logo.png" />
-<link rel="icon" type="image/png" href="logo.png" />
-<link rel="manifest" href="manifest.json" />
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js'); }
+  </script>
+  <link rel="apple-touch-icon" href="logo.png" />
+  <link rel="icon" type="image/png" href="logo.png" />
+  <link rel="manifest" href="manifest.json" />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
- <style>
+  <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body, #root { height: 100%; }
     body { font-family: 'Inter', sans-serif; background: #0a0a0a; color: #fff; -webkit-font-smoothing: antialiased; }
@@ -44,202 +42,163 @@ const STORAGE_KEY = 'dopaai_v2';
 const DEFAULT_DOPA = 5;
 const CATEGORIES = [
   { delta: -7, words: ['work','working','study','studying','learn','learning','code','coding','programming','read','reading','chess','job','office','write','writing','practice','practicing','build','building','design','designing','plan','planning','draw','drawing','research','researching','type','typing','create','creating','train','training','school','blogging','filming','editing','recording','producing','composing','investing','networking','mentoring','coaching','tutoring','freelancing','selling','marketing','strategizing','analyzing','budgeting','scheduling','presenting','homework'] },
-  { delta: -9, words: ['gym','workout','jog','jogging','run','running','exercise','fitness','pushups','situps','walk','walking','cycling','swim','swimming','hike','hiking','climb','climbing','skate','skating','dance','dancing','jump','jumping','lift','lifting','sprint','sprinting','row','rowing','box','boxing','football','soccer','basketball','tennis','volleyball','badminton','baseball','rugby','hockey','golf','martial arts','karate','boxing','wrestling','surfing','skiing','snowboarding','skateboarding','parkour','crossfit','bike'] },
-  { delta: -10, words: ['meditate','meditation','breathing','breathwork','cold shower','stretch','stretching','yoga','journal','rest','relax','relaxing','pray','praying','sauna','bath','bathing','gratitude','reflect','reflecting','nap','napping','unplug','unplugging','silence','contemplate','visualize','visualizing','mindfulness','stretching','foam rolling','ice bath','cold plunge','fasting','intermittent fasting','walking in nature','hiking alone','praying','gratitude journal','affirmations','visualization','deep breathing','body scan','digital detox','journaling'] },
-  { delta:  -4, words: ['clean','cleaning','cook','cooking','dishes','laundry','shopping','groceries','shower','hygiene','drive','driving','eat','eating','wait','waiting','chat','chatting','talk','talking','meet','meeting','travel','traveling','pack','packing','organize','organizing','prepare','preparing','grocery run','car wash','haircut','dentist','appointment','errand','dog walk','pet care','watering plants','tidying','decluttering','packing lunch','meal prep','ironing','vacuuming','commute'] },
-  { delta:  +3, words: ['music','podcast','youtube','documentary','audiobook','news','junk food','sugar','sweets','puzzle','paint','painting','sketch','sketching','photography','craft','crafting','board game','knit','knitting','crossword','sudoku','listen','listening','read fiction','novel'] },
-  { delta: +20, words: ['shorts','tiktok','reels','gaming','video games','instagram','netflix','snack','snacking','series','tv','scroll','scrolling','browsing','snapchat','twitter','facebook','energy drink','chips','candy','chocolate','fast food','takeaway','burger','pizza','soda','stream','streaming','twitch','reddit','memes','pinterest','whatsapp','texting','tinder','bumble','explore','feed','stories','clips','movie'] },
+  { delta: -9, words: ['gym','workout','jog','jogging','run','running','exercise','fitness','pushups','situps','walk','walking','cycling','swim','swimming','hike','hiking','climb','climbing','skate','skating','dance','dancing','jump','jumping','lift','lifting','sprint','sprinting','row','rowing','box','boxing','football','soccer','basketball','tennis','volleyball','badminton','baseball','rugby','hockey','golf','martial arts','karate','wrestling','surfing','skiing','snowboarding','skateboarding','parkour','crossfit','bike'] },
+  { delta: -10, words: ['meditate','meditation','breathing','breathwork','cold shower','stretch','stretching','yoga','journal','rest','relax','relaxing','pray','praying','sauna','bath','bathing','gratitude','reflect','reflecting','nap','napping','unplug','unplugging','silence','contemplate','visualize','visualizing','mindfulness','foam rolling','ice bath','cold plunge','fasting','intermittent fasting','walking in nature','hiking alone','gratitude journal','affirmations','visualization','deep breathing','body scan','digital detox','journaling'] },
+  { delta: -4, words: ['clean','cleaning','cook','cooking','dishes','laundry','shopping','groceries','shower','hygiene','drive','driving','eat','eating','wait','waiting','chat','chatting','talk','talking','meet','meeting','travel','traveling','pack','packing','organize','organizing','prepare','preparing','grocery run','car wash','haircut','dentist','appointment','errand','dog walk','pet care','watering plants','tidying','decluttering','packing lunch','meal prep','ironing','vacuuming','commute'] },
+  { delta: +3, words: ['music','podcast','youtube','documentary','audiobook','news','puzzle','paint','painting','sketch','sketching','photography','craft','crafting','board game','knit','knitting','crossword','sudoku','listen','listening','read fiction','novel'] },
+  { delta: +20, words: ['shorts','tiktok','reels','gaming','video games','instagram','netflix','snack','snacking','series','tv','scroll','scrolling','browsing','snapchat','twitter','facebook','energy drink','chips','candy','chocolate','fast food','takeaway','burger','pizza','soda','stream','streaming','twitch','reddit','memes','pinterest','whatsapp','texting','tinder','bumble','explore','feed','stories','clips','movie','junk food','sugar','sweets'] },
   { delta: +21, words: ['porn','masturbation','gooning','sex','gambling','binge','binging','smoke','smoking','drinking','alcohol','vaping','vape','bet','betting'] },
 ];
 function todayStr() { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 function clamp(v,lo,hi) { return Math.max(lo,Math.min(hi,v)); }
 const LEVELS = [
-  {level:1, title:'Civilian', xpNeeded:0},
-  {level:2, title:'Beginner', xpNeeded:100},
-  {level:3, title:'Focused', xpNeeded:250},
-  {level:4, title:'Disciplined', xpNeeded:500},
-  {level:5, title:'Warrior', xpNeeded:1000},
-  {level:6, title:'Elite', xpNeeded:2000},
-  {level:7, title:'Master', xpNeeded:3500},
-  {level:8, title:'Legend', xpNeeded:5000},
-  {level:9, title:'Monk', xpNeeded:7500},
-  {level:10, title:'Entrepreneur', xpNeeded:10000},
+  {level:1,title:'Civilian',xpNeeded:0},{level:2,title:'Beginner',xpNeeded:100},{level:3,title:'Focused',xpNeeded:250},
+  {level:4,title:'Disciplined',xpNeeded:500},{level:5,title:'Warrior',xpNeeded:1000},{level:6,title:'Elite',xpNeeded:2000},
+  {level:7,title:'Master',xpNeeded:3500},{level:8,title:'Legend',xpNeeded:5000},{level:9,title:'Monk',xpNeeded:7500},{level:10,title:'Entrepreneur',xpNeeded:10000},
 ];
 function getLevel(xp) {
-  let current = LEVELS[0];
-  for(const l of LEVELS) { if(xp >= l.xpNeeded) current = l; }
-  const nextIdx = LEVELS.findIndex(l=>l.level===current.level)+1;
-  const next = LEVELS[nextIdx] || null;
-  return { ...current, next, xp };
-}function matchActivity(text) { const lower=text.toLowerCase(); for(const cat of CATEGORIES) for(const word of cat.words) if(lower.includes(word)) return cat.delta; return +3; }
-function load() { try { const r=localStorage.getItem(STORAGE_KEY); return r?JSON.parse(r):null; } catch { return null; } }
-function save(d) { try { localStorage.setItem(STORAGE_KEY,JSON.stringify(d)); } catch {} }
-function initData(profile) { return { profile, dopamine:DEFAULT_DOPA, lastReset:todayStr(), activities:[], flames:0, targetMin:20, targetMax:40, entrepreneurMode:false, xp:0, level:1, dailyGoal:null, lastGoalDate:null }; }
-function hydrate() {
-  let d=load(); if(!d) return null;
+  let current=LEVELS[0];
+  for(const l of LEVELS){if(xp>=l.xpNeeded)current=l;}
+  const nextIdx=LEVELS.findIndex(l=>l.level===current.level)+1;
+  const next=LEVELS[nextIdx]||null;
+  return{...current,next,xp};
+}
+function matchActivity(text){const lower=text.toLowerCase();for(const cat of CATEGORIES)for(const word of cat.words)if(lower.includes(word))return cat.delta;return+3;}
+function load(){try{const r=localStorage.getItem(STORAGE_KEY);return r?JSON.parse(r):null;}catch{return null;}}
+function save(d){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(d));}catch{}}
+function initData(profile){return{profile,dopamine:DEFAULT_DOPA,lastReset:todayStr(),activities:[],flames:0,targetMin:20,targetMax:40,entrepreneurMode:false,xp:0,level:1,dailyGoal:null,lastGoalDate:null};}
+function hydrate(){
+  let d=load();if(!d)return null;
   const today=todayStr();
-  if(d.lastReset!==today) {
+  if(d.lastReset!==today){
     const prev=(d.activities||[]).filter(a=>a.date===d.lastReset);
-    if(prev.length>0){const avg=prev.reduce((s,a)=>s+a.resultingDopamine,0)/prev.length; d.flames=(avg>=d.targetMin&&avg<=d.targetMax)?(d.flames||0)+1:0;}
-    d.dopamine=DEFAULT_DOPA; d.lastReset=today; save(d);
+    if(prev.length>0){const avg=prev.reduce((s,a)=>s+a.resultingDopamine,0)/prev.length;d.flames=(avg>=d.targetMin&&avg<=d.targetMax)?(d.flames||0)+1:0;}
+    d.dopamine=DEFAULT_DOPA;d.lastReset=today;save(d);
   }
   return d;
 }
 
-function Onboarding({ onDone }) {
-  const [gender, setGender] = useState('');
-  const [age, setAge] = useState('');
-  const [weight, setWeight] = useState('');
-  const [name, setName] = useState('');
-  const ready = gender && age && weight;
-  const inp = { width:'100%', padding:'16px 20px', background:'#161616', border:'1px solid #222', borderRadius:'14px', color:'#fff', fontSize:'16px', marginTop:'10px' };
-  return (
-    <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', justifyContent:'center', padding:'40px 28px' }}>
-      <div style={{ marginBottom:'44px' }}>
-        <div style={{ fontSize:'12px', color:'#444', letterSpacing:'0.2em', fontFamily:'Syne, sans-serif', marginBottom:'14px' }}>DOPA-AI</div>
-        <div style={{ fontSize:'40px', fontWeight:'800', fontFamily:'Syne, sans-serif', lineHeight:1.1, marginBottom:'12px' }}>Let's set<br/>you up.</div>
-        <div style={{ fontSize:'14px', color:'#555', lineHeight:1.6 }}>Takes 10 seconds.</div>
+function Onboarding({onDone}){
+  const[gender,setGender]=useState('');const[age,setAge]=useState('');const[weight,setWeight]=useState('');const[name,setName]=useState('');
+  const ready=gender&&age&&weight;
+  const inp={width:'100%',padding:'16px 20px',background:'#161616',border:'1px solid #222',borderRadius:'14px',color:'#fff',fontSize:'16px',marginTop:'10px'};
+  return(
+    <div style={{minHeight:'100vh',display:'flex',flexDirection:'column',justifyContent:'center',padding:'40px 28px'}}>
+      <div style={{marginBottom:'44px'}}>
+        <div style={{fontSize:'12px',color:'#444',letterSpacing:'0.2em',fontFamily:'Syne, sans-serif',marginBottom:'14px'}}>DOPA-AI</div>
+        <div style={{fontSize:'40px',fontWeight:'800',fontFamily:'Syne, sans-serif',lineHeight:1.1,marginBottom:'12px'}}>Let's set<br/>you up.</div>
+        <div style={{fontSize:'14px',color:'#555',lineHeight:1.6}}>Takes 10 seconds.</div>
       </div>
-      <div style={{ display:'flex', flexDirection:'column', gap:'22px' }}>
+      <div style={{display:'flex',flexDirection:'column',gap:'22px'}}>
+        <div><div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',fontFamily:'Syne, sans-serif'}}>YOUR NAME (optional)</div><input value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Felix" style={inp}/></div>
         <div>
-          <div style={{ fontSize:'11px', color:'#555', letterSpacing:'0.15em', fontFamily:'Syne, sans-serif' }}>YOUR NAME (optional)</div>
-          <input value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Felix" style={inp}/>
-        </div>
-        <div>
-          <div style={{ fontSize:'11px', color:'#555', letterSpacing:'0.15em', fontFamily:'Syne, sans-serif' }}>GENDER</div>
-          <div style={{ display:'flex', gap:'10px', marginTop:'10px' }}>
-            {['Male','Female','Other'].map(g=>(
-              <button key={g} onClick={()=>setGender(g)} style={{ flex:1, padding:'15px 8px', background:gender===g?'#fff':'#161616', border:`1px solid ${gender===g?'#fff':'#222'}`, borderRadius:'14px', color:gender===g?'#000':'#666', fontSize:'13px', fontWeight:'600', fontFamily:'Syne, sans-serif' }}>{g}</button>
-            ))}
+          <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',fontFamily:'Syne, sans-serif'}}>GENDER</div>
+          <div style={{display:'flex',gap:'10px',marginTop:'10px'}}>
+            {['Male','Female','Other'].map(g=>(<button key={g} onClick={()=>setGender(g)} style={{flex:1,padding:'15px 8px',background:gender===g?'#fff':'#161616',border:`1px solid ${gender===g?'#fff':'#222'}`,borderRadius:'14px',color:gender===g?'#000':'#666',fontSize:'13px',fontWeight:'600',fontFamily:'Syne, sans-serif'}}>{g}</button>))}
           </div>
         </div>
-        <div>
-          <div style={{ fontSize:'11px', color:'#555', letterSpacing:'0.15em', fontFamily:'Syne, sans-serif' }}>AGE</div>
-          <input value={age} onChange={e=>setAge(e.target.value)} type="number" min="10" max="99" placeholder="e.g. 22" style={inp}/>
-        </div>
-        <div>
-          <div style={{ fontSize:'11px', color:'#555', letterSpacing:'0.15em', fontFamily:'Syne, sans-serif' }}>BODY WEIGHT (kg)</div>
-          <input value={weight} onChange={e=>setWeight(e.target.value)} type="number" min="30" max="300" placeholder="e.g. 75" style={inp}/>
-        </div>
+        <div><div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',fontFamily:'Syne, sans-serif'}}>AGE</div><input value={age} onChange={e=>setAge(e.target.value)} type="number" min="10" max="99" placeholder="e.g. 22" style={inp}/></div>
+        <div><div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',fontFamily:'Syne, sans-serif'}}>BODY WEIGHT (kg)</div><input value={weight} onChange={e=>setWeight(e.target.value)} type="number" min="30" max="300" placeholder="e.g. 75" style={inp}/></div>
       </div>
-      <button onClick={()=>ready&&onDone({gender,age:parseInt(age),weight:parseFloat(weight),name:name.trim()||'User'})} style={{ marginTop:'40px', width:'100%', padding:'19px', background:ready?'#fff':'#161616', color:ready?'#000':'#333', borderRadius:'16px', fontSize:'15px', fontWeight:'800', fontFamily:'Syne, sans-serif', letterSpacing:'0.05em' }}>
-        CONTINUE →
-      </button>
+      <button onClick={()=>ready&&onDone({gender,age:parseInt(age),weight:parseFloat(weight),name:name.trim()||'User'})} style={{marginTop:'40px',width:'100%',padding:'19px',background:ready?'#fff':'#161616',color:ready?'#000':'#333',borderRadius:'16px',fontSize:'15px',fontWeight:'800',fontFamily:'Syne, sans-serif',letterSpacing:'0.05em'}}>CONTINUE →</button>
     </div>
   );
 }
 
-function InstallScreen({ onInstall, onSkip, installPrompt }) {
-  return (
-    <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', justifyContent:'center', padding:'40px 28px' }}>
-      <div style={{ marginBottom:'48px', textAlign:'center' }}>
-        <div style={{ fontSize:'64px', marginBottom:'24px' }}>📲</div>
-        <div style={{ fontSize:'36px', fontWeight:'800', fontFamily:'Syne, sans-serif', lineHeight:1.1, marginBottom:'16px' }}>
-          Add to your<br/>home screen.
-        </div>
-        <div style={{ fontSize:'15px', color:'#555', lineHeight:1.7 }}>
-          Install Dopa-AI like a real app.<br/>No App Store needed.
-        </div>
+function InstallScreen({onInstall,onSkip,installPrompt}){
+  return(
+    <div style={{minHeight:'100vh',display:'flex',flexDirection:'column',justifyContent:'center',padding:'40px 28px'}}>
+      <div style={{marginBottom:'48px',textAlign:'center'}}>
+        <div style={{fontSize:'64px',marginBottom:'24px'}}>📲</div>
+        <div style={{fontSize:'36px',fontWeight:'800',fontFamily:'Syne, sans-serif',lineHeight:1.1,marginBottom:'16px'}}>Add to your<br/>home screen.</div>
+        <div style={{fontSize:'15px',color:'#555',lineHeight:1.7}}>Install Dopa-AI like a real app.<br/>No App Store needed.</div>
       </div>
-
-      <div style={{ background:'#111', borderRadius:'20px', padding:'20px', border:'1px solid #1c1c1c', marginBottom:'32px' }}>
-        {[['⚡', 'Opens instantly like a real app'],['📴', 'Works offline'],['🔒', 'All data stays on your phone'],['🚫', 'No App Store. No account.']].map(([icon, text]) => (
-          <div key={text} style={{ display:'flex', alignItems:'center', gap:'14px', padding:'10px 0', borderBottom:'1px solid #1a1a1a' }}>
-            <span style={{ fontSize:'20px' }}>{icon}</span>
-            <span style={{ fontSize:'14px', color:'#aaa' }}>{text}</span>
+      <div style={{background:'#111',borderRadius:'20px',padding:'20px',border:'1px solid #1c1c1c',marginBottom:'32px'}}>
+        {[['⚡','Opens instantly like a real app'],['📴','Works offline'],['🔒','All data stays on your phone'],['🚫','No App Store. No account.']].map(([icon,text])=>(
+          <div key={text} style={{display:'flex',alignItems:'center',gap:'14px',padding:'10px 0',borderBottom:'1px solid #1a1a1a'}}>
+            <span style={{fontSize:'20px'}}>{icon}</span><span style={{fontSize:'14px',color:'#aaa'}}>{text}</span>
           </div>
         ))}
       </div>
-
-      <button
-        onClick={()=>{ if(installPrompt){ installPrompt.prompt(); installPrompt.userChoice.then(()=>onInstall()); } else { onInstall(); } }}
-        style={{ width:'100%', padding:'19px', background:'#fff', color:'#000', borderRadius:'16px', fontSize:'15px', fontWeight:'800', fontFamily:'Syne, sans-serif', letterSpacing:'0.05em', marginBottom:'14px' }}
-      >
-        ↓ INSTALL APP
-      </button>
-
-      <button
-        onClick={onSkip}
-        style={{ width:'100%', padding:'16px', background:'transparent', color:'#444', borderRadius:'16px', fontSize:'14px', fontWeight:'500', fontFamily:'Syne, sans-serif' }}
-      >
-        I don't want to
-      </button>
+      <button onClick={()=>{if(installPrompt){installPrompt.prompt();installPrompt.userChoice.then(()=>onInstall());}else{onInstall();}}} style={{width:'100%',padding:'19px',background:'#fff',color:'#000',borderRadius:'16px',fontSize:'15px',fontWeight:'800',fontFamily:'Syne, sans-serif',letterSpacing:'0.05em',marginBottom:'14px'}}>↓ INSTALL APP</button>
+      <button onClick={onSkip} style={{width:'100%',padding:'16px',background:'transparent',color:'#444',borderRadius:'16px',fontSize:'14px',fontWeight:'500',fontFamily:'Syne, sans-serif'}}>I don't want to</button>
     </div>
   );
 }
-function GoalScreen({ onDone, data }) {
-  const [activity, setActivity] = useState('');
-  const [minutes, setMinutes] = useState('');
-  const inp = { width:'100%', padding:'16px 20px', background:'#161616', border:'1px solid #222', borderRadius:'14px', color:'#fff', fontSize:'16px', marginTop:'10px', fontFamily:'inherit' };
-  const ready = activity.trim() && minutes;
-  return (
-    <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', justifyContent:'center', padding:'40px 28px' }}>
-      <div style={{ marginBottom:'44px' }}>
-        <div style={{ fontSize:'12px', color:'#444', letterSpacing:'0.2em', fontFamily:'Syne, sans-serif', marginBottom:'14px' }}>DOPA-AI</div>
-        <div style={{ fontSize:'36px', fontWeight:'800', fontFamily:'Syne, sans-serif', lineHeight:1.1, marginBottom:'12px' }}>Set your Goal<br/>for the Day.</div>
-        <div style={{ fontSize:'14px', color:'#555', lineHeight:1.6 }}>What do you want to accomplish today?</div>
+
+function GoalScreen({onDone,data}){
+  const[activity,setActivity]=useState('');const[minutes,setMinutes]=useState('');
+  const inp={width:'100%',padding:'16px 20px',background:'#161616',border:'1px solid #222',borderRadius:'14px',color:'#fff',fontSize:'16px',marginTop:'10px',fontFamily:'inherit'};
+  const ready=activity.trim()&&minutes;
+  return(
+    <div style={{minHeight:'100vh',display:'flex',flexDirection:'column',justifyContent:'center',padding:'40px 28px'}}>
+      <div style={{marginBottom:'44px'}}>
+        <div style={{fontSize:'12px',color:'#444',letterSpacing:'0.2em',fontFamily:'Syne, sans-serif',marginBottom:'14px'}}>DOPA-AI</div>
+        <div style={{fontSize:'36px',fontWeight:'800',fontFamily:'Syne, sans-serif',lineHeight:1.1,marginBottom:'12px'}}>Set your Goal<br/>for the Day.</div>
+        <div style={{fontSize:'14px',color:'#555',lineHeight:1.6}}>What do you want to accomplish today?</div>
       </div>
-      <div style={{ display:'flex', flexDirection:'column', gap:'22px' }}>
-        <div>
-          <div style={{ fontSize:'11px', color:'#555', letterSpacing:'0.15em', fontFamily:'Syne, sans-serif' }}>ACTIVITY</div>
-          <input value={activity} onChange={e=>setActivity(e.target.value)} placeholder="e.g. Coding" style={inp}/>
-        </div>
-        <div>
-          <div style={{ fontSize:'11px', color:'#555', letterSpacing:'0.15em', fontFamily:'Syne, sans-serif' }}>MINUTES</div>
-          <input value={minutes} onChange={e=>setMinutes(e.target.value)} type="number" min="1" placeholder="e.g. 120" style={inp}/>
-        </div>
+      <div style={{display:'flex',flexDirection:'column',gap:'22px'}}>
+        <div><div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',fontFamily:'Syne, sans-serif'}}>ACTIVITY</div><input value={activity} onChange={e=>setActivity(e.target.value)} placeholder="e.g. Coding" style={inp}/></div>
+        <div><div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',fontFamily:'Syne, sans-serif'}}>MINUTES</div><input value={minutes} onChange={e=>setMinutes(e.target.value)} type="number" min="1" placeholder="e.g. 120" style={inp}/></div>
       </div>
-      <button onClick={()=>ready&&onDone(activity.trim(), parseInt(minutes))} style={{ marginTop:'40px', width:'100%', padding:'19px', background:ready?'#fff':'#161616', color:ready?'#000':'#333', borderRadius:'16px', fontSize:'15px', fontWeight:'800', fontFamily:'Syne, sans-serif', letterSpacing:'0.05em' }}>
-        SET GOAL →
-      </button>
-      <button onClick={()=>onDone(null,null)} style={{ marginTop:'12px', width:'100%', padding:'16px', background:'transparent', color:'#444', borderRadius:'16px', fontSize:'14px', fontWeight:'500', fontFamily:'Syne, sans-serif' }}>
-        Skip for today
-      </button>
+      <button onClick={()=>ready&&onDone(activity.trim(),parseInt(minutes))} style={{marginTop:'40px',width:'100%',padding:'19px',background:ready?'#fff':'#161616',color:ready?'#000':'#333',borderRadius:'16px',fontSize:'15px',fontWeight:'800',fontFamily:'Syne, sans-serif',letterSpacing:'0.05em'}}>SET GOAL →</button>
+      <button onClick={()=>onDone(null,null)} style={{marginTop:'12px',width:'100%',padding:'16px',background:'transparent',color:'#444',borderRadius:'16px',fontSize:'14px',fontWeight:'500',fontFamily:'Syne, sans-serif'}}>Skip for today</button>
     </div>
   );
 }
-function HomeScreen({ data, setData, installPrompt, setInstallPrompt }) {
-  const [text, setText] = useState('');
-  const [mins, setMins] = useState('');
-  const [flash, setFlash] = useState(null);
-  const [page, setPage] = useState(0);
-  const touchStartX = React.useRef(null);
-  function handleTouchStart(e) { touchStartX.current = e.touches[0].clientX; }
-  function handleTouchEnd(e) {
-    if(touchStartX.current === null) return;
-    const diff = touchStartX.current - e.changedTouches[0].clientX;
-    if(diff > 50) setPage(1);
-    if(diff < -50) setPage(0);
-    touchStartX.current = null;
+
+function HomeScreen({data,setData,installPrompt,setInstallPrompt}){
+  const[text,setText]=useState('');const[mins,setMins]=useState('');const[flash,setFlash]=useState(null);const[page,setPage]=useState(0);
+  const touchStartX=React.useRef(null);
+  function handleTouchStart(e){touchStartX.current=e.touches[0].clientX;}
+  function handleTouchEnd(e){
+    if(touchStartX.current===null)return;
+    const diff=touchStartX.current-e.changedTouches[0].clientX;
+    if(diff>50)setPage(1);if(diff<-50)setPage(0);
+    touchStartX.current=null;
   }
-  function handleAdd() {
-    const trimmed=text.trim(); if(!trimmed) return;
+  function handleAdd(){
+    const trimmed=text.trim();if(!trimmed)return;
     const m=parseFloat(mins)||30;
     const baseDelta=matchActivity(trimmed);
     const finalDelta=Math.round(baseDelta*Math.min(m/30,4.0)*10)/10;
     const max=data.entrepreneurMode?25:100;
-const newDopa=clamp(Math.round((data.dopamine+finalDelta)*10)/10,1,max);
+    const newDopa=clamp(Math.round((data.dopamine+finalDelta)*10)/10,1,max);
     const entry={id:Date.now(),activityText:trimmed,durationMinutes:m,baseDelta,finalDelta,resultingDopamine:newDopa,timestamp:new Date().toISOString(),date:todayStr()};
-   const xpGain = finalDelta < 0 ? Math.round(Math.abs(finalDelta) * 2) : 0;
-const newXp = (data.xp||0) + xpGain;
-const nd={...data,dopamine:newDopa,activities:[...data.activities,entry],xp:newXp,level:getLevel(newXp).level};
-    setData(nd); setText(''); setMins(''); setFlash(finalDelta);if(data.entrepreneurMode&&newDopa>=25){const el=document.createElement('div');el.innerText='YOUR LIFE DEPENDS ON YOUR ACTIONS.';el.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;font-size:28px;font-weight:800;font-family:Syne,sans-serif;z-index:9999;padding:40px;letter-spacing:0.05em;opacity:0;transition:opacity 0.5s ease;';document.body.appendChild(el);setTimeout(()=>el.style.opacity='1',10);setTimeout(()=>{el.style.opacity='0';setTimeout(()=>el.remove(),500);},3000);} setTimeout(()=>setFlash(null),1500);
+    const xpGain=finalDelta<0?Math.round(Math.abs(finalDelta)*2):0;
+    const newXp=(data.xp||0)+xpGain;
+    const nd={...data,dopamine:newDopa,activities:[...data.activities,entry],xp:newXp,level:getLevel(newXp).level};
+    setData(nd);setText('');setMins('');setFlash(finalDelta);
+    if(data.entrepreneurMode&&newDopa>=25){const el=document.createElement('div');el.innerText='YOUR LIFE DEPENDS ON YOUR ACTIONS.';el.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;font-size:28px;font-weight:800;font-family:Syne,sans-serif;z-index:9999;padding:40px;letter-spacing:0.05em;opacity:0;transition:opacity 0.5s ease;';document.body.appendChild(el);setTimeout(()=>el.style.opacity='1',10);setTimeout(()=>{el.style.opacity='0';setTimeout(()=>el.remove(),500);},3000);}
+    setTimeout(()=>setFlash(null),1500);
   }
-  const dopaColor = data.dopamine<=30?'#4d8fff':data.dopamine<=60?'#fff':'#ff4444';
-  const todayActs = data.activities.filter(a=>a.date===todayStr());
-  const greeting = data.profile?.name ? `Hey, ${data.profile.name}.` : 'Hey.';
-  return (
-  return (
-   <div style={{ padding:'28px 24px 120px' }}>
-          {data.dailyGoal&&data.dailyGoal.activity&&(()=>{const acts=data.activities.filter(a=>a.date===todayStr()&&a.activityText.toLowerCase().includes(data.dailyGoal.activity.toLowerCase()));const doneMins=acts.reduce((s,a)=>s+a.durationMinutes,0);const pct=Math.min((doneMins/data.dailyGoal.minutes)*100,100);const done=doneMins>=data.dailyGoal.minutes;return(<div style={{background:'#111',borderRadius:'22px',padding:'20px 24px',marginBottom:'16px',border:`1px solid ${done?'#44ff88':'#1c1c1c'}`}}><div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'10px'}}><div><div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',fontFamily:'Syne, sans-serif'}}>TODAY'S GOAL</div><div style={{fontSize:'18px',fontWeight:'800',fontFamily:'Syne, sans-serif',marginTop:'2px'}}>{data.dailyGoal.activity}</div></div><div style={{textAlign:'right'}}><div style={{fontSize:'22px',fontWeight:'800',fontFamily:'Syne, sans-serif',color:done?'#44ff88':'#fff'}}>{doneMins}<span style={{fontSize:'13px',color:'#555',fontWeight:'400'}}> / {data.dailyGoal.minutes} min</span></div></div></div><div style={{height:'4px',background:'#1c1c1c',borderRadius:'2px',overflow:'hidden'}}><div style={{height:'100%',width:`${pct}%`,background:done?'#44ff88':'#fff',borderRadius:'2px',transition:'width 0.4s ease'}}/></div>{done&&<div style={{fontSize:'12px',color:'#44ff88',marginTop:'8px',fontFamily:'Syne, sans-serif',fontWeight:'700'}}>✅ GOAL COMPLETED!</div>}</div>);})()}
+  const dopaColor=data.dopamine<=30?'#4d8fff':data.dopamine<=60?'#fff':'#ff4444';
+  const greeting=data.profile?.name?`Hey, ${data.profile.name}.`:'Hey.';
+  return(
+    <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} style={{overflow:'hidden',position:'relative'}}>
+      <div style={{display:'flex',transition:'transform 0.3s ease',transform:`translateX(${page*-100}%)`}}>
+        <div style={{minWidth:'100%',padding:'28px 24px 120px',flexShrink:0}}>
+          {data.dailyGoal&&data.dailyGoal.activity&&(()=>{
+            const acts=data.activities.filter(a=>a.date===todayStr()&&a.activityText.toLowerCase().includes(data.dailyGoal.activity.toLowerCase()));
+            const doneMins=acts.reduce((s,a)=>s+a.durationMinutes,0);
+            const pct=Math.min((doneMins/data.dailyGoal.minutes)*100,100);
+            const done=doneMins>=data.dailyGoal.minutes;
+            return(<div style={{background:'#111',borderRadius:'22px',padding:'20px 24px',marginBottom:'16px',border:`1px solid ${done?'#44ff88':'#1c1c1c'}`}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'10px'}}>
+                <div><div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',fontFamily:'Syne, sans-serif'}}>TODAY'S GOAL</div><div style={{fontSize:'18px',fontWeight:'800',fontFamily:'Syne, sans-serif',marginTop:'2px'}}>{data.dailyGoal.activity}</div></div>
+                <div style={{textAlign:'right'}}><div style={{fontSize:'22px',fontWeight:'800',fontFamily:'Syne, sans-serif',color:done?'#44ff88':'#fff'}}>{doneMins}<span style={{fontSize:'13px',color:'#555',fontWeight:'400'}}> / {data.dailyGoal.minutes} min</span></div></div>
+              </div>
+              <div style={{height:'4px',background:'#1c1c1c',borderRadius:'2px',overflow:'hidden'}}><div style={{height:'100%',width:`${pct}%`,background:done?'#44ff88':'#fff',borderRadius:'2px',transition:'width 0.4s ease'}}/></div>
+              {done&&<div style={{fontSize:'12px',color:'#44ff88',marginTop:'8px',fontFamily:'Syne, sans-serif',fontWeight:'700'}}>✅ GOAL COMPLETED!</div>}
+            </div>);
+          })()}
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:'32px'}}>
             <div>
               <div style={{fontSize:'24px',fontWeight:'800',fontFamily:'Syne, sans-serif'}}>{greeting}</div>
               <div style={{fontSize:'13px',color:'#555',marginTop:'3px'}}>{data.profile?.gender} · {data.profile?.age}y · {data.profile?.weight}kg</div>
             </div>
             <div style={{display:'flex',alignItems:'center',gap:'6px',background:'#161616',padding:'9px 16px',borderRadius:'20px',border:'1px solid #222'}}>
-              <span style={{fontSize:'16px'}}>🔥</span>
-              <span style={{fontSize:'17px',fontWeight:'800',fontFamily:'Syne, sans-serif'}}>{data.flames}</span>
+              <span style={{fontSize:'16px'}}>🔥</span><span style={{fontSize:'17px',fontWeight:'800',fontFamily:'Syne, sans-serif'}}>{data.flames}</span>
             </div>
           </div>
           <div style={{background:'#111',borderRadius:'22px',padding:'28px 24px 24px',marginBottom:'16px',border:'1px solid #1c1c1c',textAlign:'center'}}>
@@ -248,9 +207,7 @@ const nd={...data,dopamine:newDopa,activities:[...data.activities,entry],xp:newX
               <div style={{fontSize:'90px',fontWeight:'800',fontFamily:'Syne, sans-serif',lineHeight:1,color:dopaColor,transition:'color 0.3s'}}>{Math.round(data.dopamine)}</div>
               {flash!==null&&(<div style={{position:'absolute',top:'10px',right:'-50px',fontSize:'22px',fontWeight:'800',fontFamily:'Syne, sans-serif',color:flash<0?'#4d8fff':'#ff4444'}}>{flash>0?'+':''}{Math.round(flash)}</div>)}
             </div>
-            <div style={{marginTop:'18px',height:'4px',background:'#1c1c1c',borderRadius:'2px',overflow:'hidden'}}>
-              <div style={{height:'100%',width:`${((data.dopamine-1)/99)*100}%`,background:dopaColor,borderRadius:'2px',transition:'width 0.4s ease'}}/>
-            </div>
+            <div style={{marginTop:'18px',height:'4px',background:'#1c1c1c',borderRadius:'2px',overflow:'hidden'}}><div style={{height:'100%',width:`${((data.dopamine-1)/99)*100}%`,background:dopaColor,borderRadius:'2px',transition:'width 0.4s ease'}}/></div>
             <div style={{display:'flex',justifyContent:'space-between',marginTop:'8px'}}>
               <span style={{fontSize:'10px',color:'#333'}}>1</span>
               <span style={{fontSize:'10px',color:'#444'}}>{data.entrepreneurMode?'ENTREPRENEUR 0–25':`TARGET ${data.targetMin}–${data.targetMax}`}</span>
@@ -267,15 +224,50 @@ const nd={...data,dopamine:newDopa,activities:[...data.activities,entry],xp:newX
         </div>
         <div style={{minWidth:'100%',padding:'28px 24px 120px',flexShrink:0}}>
           <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',fontFamily:'Syne, sans-serif',marginBottom:'20px',textAlign:'center'}}>STATS & INSIGHTS</div>
-          {(()=>{const lvl=getLevel(data.xp||0);const pct=lvl.next?Math.round(((data.xp-lvl.xpNeeded)/(lvl.next.xpNeeded-lvl.xpNeeded))*100):100;return(<div style={{background:'#111',borderRadius:'22px',padding:'20px 24px',marginBottom:'16px',border:'1px solid #1c1c1c'}}><div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'10px'}}><div><div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',fontFamily:'Syne, sans-serif'}}>LEVEL {lvl.level}</div><div style={{fontSize:'24px',fontWeight:'800',fontFamily:'Syne, sans-serif'}}>{lvl.title}</div></div><div style={{textAlign:'right'}}><div style={{fontSize:'11px',color:'#555',letterSpacing:'0.1em',fontFamily:'Syne, sans-serif'}}>XP</div><div style={{fontSize:'24px',fontWeight:'800',fontFamily:'Syne, sans-serif',color:'#4d8fff'}}>{data.xp||0}</div></div></div><div style={{height:'4px',background:'#1c1c1c',borderRadius:'2px',overflow:'hidden'}}><div style={{height:'100%',width:`${pct}%`,background:'#4d8fff',borderRadius:'2px',transition:'width 0.4s ease'}}/></div><div style={{display:'flex',justifyContent:'space-between',marginTop:'6px'}}><span style={{fontSize:'10px',color:'#333'}}>{lvl.xpNeeded} XP</span>{lvl.next&&<span style={{fontSize:'10px',color:'#444'}}>Next: {lvl.next.title} at {lvl.next.xpNeeded} XP</span>}{!lvl.next&&<span style={{fontSize:'10px',color:'#4d8fff'}}>MAX LEVEL</span>}</div></div>);})()} 
+          {(()=>{const lvl=getLevel(data.xp||0);const pct=lvl.next?Math.round(((data.xp-lvl.xpNeeded)/(lvl.next.xpNeeded-lvl.xpNeeded))*100):100;return(
+            <div style={{background:'#111',borderRadius:'22px',padding:'20px 24px',marginBottom:'16px',border:'1px solid #1c1c1c'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'10px'}}>
+                <div><div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',fontFamily:'Syne, sans-serif'}}>LEVEL {lvl.level}</div><div style={{fontSize:'24px',fontWeight:'800',fontFamily:'Syne, sans-serif'}}>{lvl.title}</div></div>
+                <div style={{textAlign:'right'}}><div style={{fontSize:'11px',color:'#555',letterSpacing:'0.1em',fontFamily:'Syne, sans-serif'}}>XP</div><div style={{fontSize:'24px',fontWeight:'800',fontFamily:'Syne, sans-serif',color:'#4d8fff'}}>{data.xp||0}</div></div>
+              </div>
+              <div style={{height:'4px',background:'#1c1c1c',borderRadius:'2px',overflow:'hidden'}}><div style={{height:'100%',width:`${pct}%`,background:'#4d8fff',borderRadius:'2px',transition:'width 0.4s ease'}}/></div>
+              <div style={{display:'flex',justifyContent:'space-between',marginTop:'6px'}}>
+                <span style={{fontSize:'10px',color:'#333'}}>{lvl.xpNeeded} XP</span>
+                {lvl.next&&<span style={{fontSize:'10px',color:'#444'}}>Next: {lvl.next.title} at {lvl.next.xpNeeded} XP</span>}
+                {!lvl.next&&<span style={{fontSize:'10px',color:'#4d8fff'}}>MAX LEVEL</span>}
+              </div>
+            </div>
+          );})()} 
           <div style={{background:'#111',borderRadius:'22px',padding:'20px',border:'1px solid #1c1c1c',marginTop:'14px'}}>
             <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',fontFamily:'Syne, sans-serif',marginBottom:'10px'}}>RECOMMENDATION</div>
             <div style={{fontSize:'14px',color:'#aaa',lineHeight:'1.7'}}>
-              {(()=>{const acts=data.activities.filter(a=>a.date===todayStr());const hasWork=acts.some(a=>['code','coding','program','programming','build','building','design','designing','study','studying','learn','learning','practice','practicing','create','creating','research','researching','write','writing'].some(w=>a.activityText.toLowerCase().includes(w)));const hasGym=acts.some(a=>['gym','workout','run','exercise','swim','walk','sport','football','basketball'].some(w=>a.activityText.toLowerCase().includes(w)));if(acts.length===0)return"You haven't logged anything yet today. Start with something productive!";if(data.dopamine>=60)return"⚠️ Your dopamine is very high. Try meditating, working out or doing something productive to bring it down.";if(data.dopamine<=15)return"💪 Your dopamine is very low — you are in a great focused state. Keep going!";if(!hasWork)return"📚 You haven't done any productive work today. Now is a good time to study or work.";if(!hasGym)return"🏋️ You haven't worked out today. A workout will sharpen your focus significantly.";return"✅ You're doing well today. Stay consistent and avoid high dopamine distractions!";})()}
+              {(()=>{
+                const acts=data.activities.filter(a=>a.date===todayStr());
+                const hasWork=acts.some(a=>['code','coding','program','programming','build','building','design','designing','study','studying','learn','learning','practice','practicing','create','creating','research','researching','write','writing'].some(w=>a.activityText.toLowerCase().includes(w)));
+                const hasGym=acts.some(a=>['gym','workout','run','exercise','swim','walk','sport','football','basketball'].some(w=>a.activityText.toLowerCase().includes(w)));
+                if(acts.length===0)return"You haven't logged anything yet today. Start with something productive!";
+                if(data.dopamine>=60)return"⚠️ Your dopamine is very high. Try meditating, working out or doing something productive to bring it down.";
+                if(data.dopamine<=15)return"💪 Your dopamine is very low — you are in a great focused state. Keep going!";
+                if(!hasWork)return"📚 You haven't done any productive work today. Now is a good time to study or work.";
+                if(!hasGym)return"🏋️ You haven't worked out today. A workout will sharpen your focus significantly.";
+                return"✅ You're doing well today. Stay consistent and avoid high dopamine distractions!";
+              })()}
             </div>
             <div style={{marginTop:'16px',borderTop:'1px solid #1c1c1c',paddingTop:'16px'}}>
               <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',fontFamily:'Syne, sans-serif',marginBottom:'12px'}}>TRY NEXT</div>
-              {(()=>{const acts=data.activities.filter(a=>a.date===todayStr());const hasWork=acts.some(a=>['code','coding','program','programming','build','building','design','designing','study','studying','learn','learning','practice','practicing','create','creating','research','researching','write','writing'].some(w=>a.activityText.toLowerCase().includes(w)));const suggestions=[];if(!hasWork){suggestions.push({icon:'📚',text:'Do some work or study'});suggestions.push({icon:'💻',text:'Code or learn something new'});suggestions.push({icon:'✍️',text:'Write or plan your goals'});}else{suggestions.push({icon:'🏋️',text:'Work out or go for a run'});suggestions.push({icon:'🚴',text:'Go cycling or take a walk'});suggestions.push({icon:'🧘',text:'Meditate or journal'});}const top=suggestions.slice(0,3);return top.map((s,i)=>(<div key={i} style={{display:'flex',alignItems:'center',gap:'12px',padding:'10px 0',borderBottom:i<top.length-1?'1px solid #1c1c1c':'none'}}><span style={{fontSize:'20px'}}>{s.icon}</span><div><div style={{fontSize:'11px',color:'#555',fontFamily:'Syne, sans-serif'}}>{i+1}.</div><div style={{fontSize:'13px',color:'#aaa'}}>{s.text}</div></div></div>));})()}
+              {(()=>{
+                const acts=data.activities.filter(a=>a.date===todayStr());
+                const hasWork=acts.some(a=>['code','coding','program','programming','build','building','design','designing','study','studying','learn','learning','practice','practicing','create','creating','research','researching','write','writing'].some(w=>a.activityText.toLowerCase().includes(w)));
+                const suggestions=[];
+                if(!hasWork){suggestions.push({icon:'📚',text:'Do some work or study'});suggestions.push({icon:'💻',text:'Code or learn something new'});suggestions.push({icon:'✍️',text:'Write or plan your goals'});}
+                else{suggestions.push({icon:'🏋️',text:'Work out or go for a run'});suggestions.push({icon:'🚴',text:'Go cycling or take a walk'});suggestions.push({icon:'🧘',text:'Meditate or journal'});}
+                return suggestions.slice(0,3).map((s,i)=>(
+                  <div key={i} style={{display:'flex',alignItems:'center',gap:'12px',padding:'10px 0',borderBottom:i<2?'1px solid #1c1c1c':'none'}}>
+                    <span style={{fontSize:'20px'}}>{s.icon}</span>
+                    <div><div style={{fontSize:'11px',color:'#555',fontFamily:'Syne, sans-serif'}}>{i+1}.</div><div style={{fontSize:'13px',color:'#aaa'}}>{s.text}</div></div>
+                  </div>
+                ));
+              })()}
             </div>
           </div>
         </div>
@@ -287,155 +279,9 @@ const nd={...data,dopamine:newDopa,activities:[...data.activities,entry],xp:newX
     </div>
   );
 }
-})()}
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'32px' }}>
-        <div>
-          <div style={{ fontSize:'24px', fontWeight:'800', fontFamily:'Syne, sans-serif' }}>{greeting}</div>
-          <div style={{ fontSize:'13px', color:'#555', marginTop:'3px' }}>{data.profile?.gender} · {data.profile?.age}y · {data.profile?.weight}kg</div>
-        </div>
-        <div style={{ display:'flex', alignItems:'center', gap:'6px', background:'#161616', padding:'9px 16px', borderRadius:'20px', border:'1px solid #222' }}>
-          <span style={{ fontSize:'16px' }}>🔥</span>
-          <span style={{ fontSize:'17px', fontWeight:'800', fontFamily:'Syne, sans-serif' }}>{data.flames}</span>
-        </div>
-      </div>
-      <div style={{ background:'#111', borderRadius:'22px', padding:'28px 24px 24px', marginBottom:'16px', border:'1px solid #1c1c1c', textAlign:'center' }}>
-        <div style={{ fontSize:'11px', color:'#444', letterSpacing:'0.2em', marginBottom:'6px', fontFamily:'Syne, sans-serif' }}>DOPAMINE</div>
-        <div style={{ position:'relative', display:'inline-block' }}>
-          <div style={{ fontSize:'90px', fontWeight:'800', fontFamily:'Syne, sans-serif', lineHeight:1, color:dopaColor, transition:'color 0.3s' }}>
-            {Math.round(data.dopamine)}
-          </div>
-          {flash!==null && (
-            <div style={{ position:'absolute', top:'10px', right:'-50px', fontSize:'22px', fontWeight:'800', fontFamily:'Syne, sans-serif', color:flash<0?'#4d8fff':'#ff4444' }}>
-              {flash>0?'+':''}{Math.round(flash)}
-            </div>
-          )}
-        </div>
-        <div style={{ marginTop:'18px', height:'4px', background:'#1c1c1c', borderRadius:'2px', overflow:'hidden' }}>
-          <div style={{ height:'100%', width:`${((data.dopamine-1)/99)*100}%`, background:dopaColor, borderRadius:'2px', transition:'width 0.4s ease' }}/>
-        </div>
-        <div style={{ display:'flex', justifyContent:'space-between', marginTop:'8px' }}>
-          <span style={{ fontSize:'10px', color:'#333' }}>1</span>
-          <span style={{ fontSize:'10px', color:'#444' }}>{data.entrepreneurMode?'ENTREPRENEUR 0–25':`TARGET ${data.targetMin}–${data.targetMax}`}</span>
-          <span style={{ fontSize:'10px', color:'#333' }}>100</span>
-        </div>
-      </div>
-      <div style={{ background:'#111', borderRadius:'22px', padding:'20px', border:'1px solid #1c1c1c', marginBottom:'14px' }}>
-        <input value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleAdd()} placeholder="What did you just do?" style={{ width:'100%', background:'#1a1a1a', border:'1px solid #252525', color:'#fff', padding:'15px 16px', fontSize:'15px', borderRadius:'12px', marginBottom:'12px' }}/>
-        <div style={{ display:'flex', gap:'10px' }}>
-          <input value={mins} onChange={e=>setMins(e.target.value)} type="number" placeholder="Min" style={{ width:'88px', background:'#1a1a1a', border:'1px solid #252525', color:'#fff', padding:'15px 12px', fontSize:'15px', borderRadius:'12px' }}/>
-          <button onClick={handleAdd} style={{ flex:1, background:'#fff', color:'#000', padding:'15px', borderRadius:'12px', fontSize:'14px', fontWeight:'800', fontFamily:'Syne, sans-serif', letterSpacing:'0.05em' }}>ADD</button>
-        </div>
-      </div>
-  </div>
-    <div style={{ minWidth:'100%', padding:'28px 24px 120px', flexShrink:0 }}>
-      <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',fontFamily:'Syne, sans-serif',marginBottom:'20px',textAlign:'center'}}>STATS & INSIGHTS</div>
-      {(()=>{const lvl=getLevel(data.xp||0);const pct=lvl.next?Math.round(((data.xp-lvl.xpNeeded)/(lvl.next.xpNeeded-lvl.xpNeeded))*100):100;return(
-        <div style={{background:'#111',borderRadius:'22px',padding:'20px 24px',marginBottom:'16px',border:'1px solid #1c1c1c'}}>
-          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'10px'}}>
-            <div>
-              <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',fontFamily:'Syne, sans-serif'}}>LEVEL {lvl.level}</div>
-              <div style={{fontSize:'24px',fontWeight:'800',fontFamily:'Syne, sans-serif'}}>{lvl.title}</div>
-            </div>
-            <div style={{textAlign:'right'}}>
-              <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.1em',fontFamily:'Syne, sans-serif'}}>XP</div>
-              <div style={{fontSize:'24px',fontWeight:'800',fontFamily:'Syne, sans-serif',color:'#4d8fff'}}>{data.xp||0}</div>
-            </div>
-          </div>
-          <div style={{height:'4px',background:'#1c1c1c',borderRadius:'2px',overflow:'hidden'}}>
-            <div style={{height:'100%',width:`${pct}%`,background:'#4d8fff',borderRadius:'2px',transition:'width 0.4s ease'}}/>
-          </div>
-          <div style={{display:'flex',justifyContent:'space-between',marginTop:'6px'}}>
-            <span style={{fontSize:'10px',color:'#333'}}>{lvl.xpNeeded} XP</span>
-            {lvl.next&&<span style={{fontSize:'10px',color:'#444'}}>Next: {lvl.next.title} at {lvl.next.xpNeeded} XP</span>}
-            {!lvl.next&&<span style={{fontSize:'10px',color:'#4d8fff'}}>MAX LEVEL</span>}
-          </div>
-        </div>
-      );})()} 
-      <div style={{background:'#111',borderRadius:'22px',padding:'20px',border:'1px solid #1c1c1c',marginTop:'14px'}}>
-        <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',fontFamily:'Syne, sans-serif',marginBottom:'10px'}}>RECOMMENDATION</div>
-        <div style={{fontSize:'14px',color:'#aaa',lineHeight:'1.7'}}>
-          {(()=>{
-            const acts=data.activities.filter(a=>a.date===todayStr());
-            const hasWork=acts.some(a=>['code','coding','program','programming','build','building','design','designing','study','studying','learn','learning','practice','practicing','create','creating','research','researching','write','writing'].some(w=>a.activityText.toLowerCase().includes(w)));
-            const hasGym=acts.some(a=>['gym','workout','run','exercise','swim','walk','sport','football','basketball'].some(w=>a.activityText.toLowerCase().includes(w)));
-            if(acts.length===0) return "You haven't logged anything yet today. Start with something productive!";
-            if(data.dopamine>=60) return "⚠️ Your dopamine is very high. Try meditating, working out or doing something productive to bring it down.";
-            if(data.dopamine<=15) return "💪 Your dopamine is very low — you are in a great focused state. Keep going!";
-            if(!hasWork) return "📚 You haven't done any productive work today. Now is a good time to study or work.";
-            if(!hasGym) return "🏋️ You haven't worked out today. A workout will sharpen your focus significantly.";
-            return "✅ You're doing well today. Stay consistent and avoid high dopamine distractions!";
-          })()}
-        </div>
-        <div style={{marginTop:'16px',borderTop:'1px solid #1c1c1c',paddingTop:'16px'}}>
-          <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',fontFamily:'Syne, sans-serif',marginBottom:'12px'}}>TRY NEXT</div>
-          {(()=>{
-            const acts=data.activities.filter(a=>a.date===todayStr());
-            const hasWork=acts.some(a=>['code','coding','program','programming','build','building','design','designing','study','studying','learn','learning','practice','practicing','create','creating','research','researching','write','writing'].some(w=>a.activityText.toLowerCase().includes(w)));
-            const suggestions=[];
-            if(!hasWork){
-              suggestions.push({icon:'📚',text:'Do some work or study'});
-              suggestions.push({icon:'💻',text:'Code or learn something new'});
-              suggestions.push({icon:'✍️',text:'Write or plan your goals'});
-            } else {
-              suggestions.push({icon:'🏋️',text:'Work out or go for a run'});
-              suggestions.push({icon:'🚴',text:'Go cycling or take a walk'});
-              suggestions.push({icon:'🧘',text:'Meditate or journal'});
-            }
-            const top=suggestions.slice(0,3);
-            return top.map((s,i)=>(
-              <div key={i} style={{display:'flex',alignItems:'center',gap:'12px',padding:'10px 0',borderBottom:i<top.length-1?'1px solid #1c1c1c':'none'}}>
-                <span style={{fontSize:'20px'}}>{s.icon}</span>
-                <div>
-                  <div style={{fontSize:'11px',color:'#555',fontFamily:'Syne, sans-serif'}}>{i+1}.</div>
-                  <div style={{fontSize:'13px',color:'#aaa'}}>{s.text}</div>
-                </div>
-              </div>
-            ));
-          })()}
-        </div>
-      </div>
-    </div>
-    </div>
-    </div>
-    <div style={{display:'flex',justifyContent:'center',gap:'6px',paddingBottom:'8px',marginTop:'-16px'}}>
-      <div style={{width:'6px',height:'6px',borderRadius:'50%',background:page===0?'#fff':'#333',transition:'background 0.2s'}}/>
-      <div style={{width:'6px',height:'6px',borderRadius:'50%',background:page===1?'#fff':'#333',transition:'background 0.2s'}}/>
-    </div>
-  );
-}
-function HistoryScreen   
-({ data }) {
-  const [sel, setSel] = useState(todayStr());
-  const dates=[...new Set(data.activities.map(a=>a.date))].sort((a,b)=>b.localeCompare(a));
-  const acts=data.activities.filter(a=>a.date===sel).sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
-  function fmtTime(ts){const d=new Date(ts);return`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
-  function fmtDate(str){const d=new Date(str+'T00:00:00');return d.toLocaleDateString('en-US',{month:'short',day:'numeric'}).toUpperCase();}
-  return (
-    <div style={{ padding:'28px 24px 120px' }}>
-      <div style={{ fontSize:'30px', fontWeight:'800', fontFamily:'Syne, sans-serif', marginBottom:'24px' }}>Log</div>
-      <div style={{ display:'flex', gap:'8px', overflowX:'auto', paddingBottom:'16px', marginBottom:'16px' }}>
-        {dates.length===0&&<div style={{fontSize:'13px',color:'#555'}}>No activities yet.</div>}
-        {dates.map(d=><button key={d} onClick={()=>setSel(d)} style={{ padding:'8px 18px', borderRadius:'20px', flexShrink:0, background:sel===d?'#fff':'#161616', color:sel===d?'#000':'#555', fontSize:'12px', fontWeight:'700', fontFamily:'Syne, sans-serif', border:`1px solid ${sel===d?'#fff':'#252525'}` }}>{fmtDate(d)}</button>)}
-      </div>
-      {acts.length===0&&<div style={{fontSize:'13px',color:'#555',textAlign:'center',marginTop:'48px'}}>Nothing here.</div>}
-      {acts.map(a=>(
-        <div key={a.id} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'17px 0', borderBottom:'1px solid #161616' }}>
-          <div>
-            <div style={{fontSize:'15px',fontWeight:'500'}}>{a.activityText}</div>
-            <div style={{fontSize:'12px',color:'#555',marginTop:'3px'}}>{fmtTime(a.timestamp)} · {a.durationMinutes} min</div>
-          </div>
-          <div style={{textAlign:'right'}}>
-            <div style={{fontSize:'22px',fontWeight:'800',fontFamily:'Syne, sans-serif',color:a.finalDelta<0?'#4d8fff':'#ff4444'}}>{a.finalDelta>0?'+':''}{Math.round(a.finalDelta)}</div>
-            <div style={{fontSize:'11px',color:'#555'}}>→ {Math.round(a.resultingDopamine)}</div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-function CalendarScreen({ data }) {
-  const [view, setView] = useState(new Date());
-  const [sel, setSel] = useState(null);
+
+function CalendarScreen({data}){
+  const[view,setView]=useState(new Date());const[sel,setSel]=useState(null);
   const year=view.getFullYear(),month=view.getMonth();
   const daysInMonth=new Date(year,month+1,0).getDate(),firstDay=new Date(year,month,1).getDay();
   const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -443,9 +289,9 @@ function CalendarScreen({ data }) {
   const selStr=sel?`${year}-${String(month+1).padStart(2,'0')}-${String(sel).padStart(2,'0')}`:null;
   const selActs=selStr?data.activities.filter(a=>a.date===selStr):[];
   function fmtTime(ts){const d=new Date(ts);return`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
-  return (
-    <div style={{ padding:'28px 24px 120px' }}>
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'24px' }}>
+  return(
+    <div style={{padding:'28px 24px 120px'}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'24px'}}>
         <div style={{fontSize:'30px',fontWeight:'800',fontFamily:'Syne, sans-serif'}}>{MONTHS[month]} {year}</div>
         <div style={{display:'flex',gap:'8px'}}>
           <button onClick={()=>setView(new Date(year,month-1,1))} style={{color:'#fff',fontSize:'20px',padding:'6px 12px',background:'#161616',borderRadius:'10px',border:'1px solid #222'}}>‹</button>
@@ -460,7 +306,7 @@ function CalendarScreen({ data }) {
         {Array(daysInMonth).fill(null).map((_,i)=>{
           const day=i+1,dd=getDayData(day),isSel=sel===day;
           const isToday=new Date().getDate()===day&&new Date().getMonth()===month&&new Date().getFullYear()===year;
-          return <button key={day} onClick={()=>setSel(isSel?null:day)} style={{aspectRatio:'1',borderRadius:'10px',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:'3px',background:isSel?'#fff':dd?(dd.inRange?'#0d1f10':'#1f0d0d'):'#141414',border:isToday?'1px solid #444':'1px solid transparent',cursor:'pointer'}}>
+          return<button key={day} onClick={()=>setSel(isSel?null:day)} style={{aspectRatio:'1',borderRadius:'10px',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:'3px',background:isSel?'#fff':dd?(dd.inRange?'#0d1f10':'#1f0d0d'):'#141414',border:isToday?'1px solid #444':'1px solid transparent',cursor:'pointer'}}>
             <span style={{fontSize:'13px',fontWeight:isToday?'700':'400',color:isSel?'#000':'#fff'}}>{day}</span>
             {dd&&<div style={{width:'4px',height:'4px',borderRadius:'50%',background:dd.inRange?'#44ff88':'#ff4444'}}/>}
           </button>;
@@ -477,30 +323,29 @@ function CalendarScreen({ data }) {
     </div>
   );
 }
-function SettingsScreen({ data, setData }) {
-  const [minVal, setMinVal] = useState(String(data.targetMin));
-  const [maxVal, setMaxVal] = useState(String(data.targetMax));
-  const [saved, setSaved] = useState(false);
+
+function SettingsScreen({data,setData}){
+  const[minVal,setMinVal]=useState(String(data.targetMin));const[maxVal,setMaxVal]=useState(String(data.targetMax));const[saved,setSaved]=useState(false);
   function saveTarget(){const mn=parseInt(minVal),mx=parseInt(maxVal);if(isNaN(mn)||isNaN(mx)||mn>=mx)return;const nd={...data,targetMin:mn,targetMax:mx};setData(nd);setSaved(true);setTimeout(()=>setSaved(false),1500);}
   function resetDopa(){if(!confirm('Reset to 5?'))return;setData({...data,dopamine:5});}
   function resetFlames(){if(!confirm('Reset flames?'))return;setData({...data,flames:0});}
   const inp={background:'#1a1a1a',border:'1px solid #252525',color:'#fff',padding:'13px 14px',fontSize:'15px',borderRadius:'12px',width:'82px'};
-  return (
-    <div style={{ padding:'28px 24px 120px' }}>
+  return(
+    <div style={{padding:'28px 24px 120px'}}>
       <div style={{fontSize:'30px',fontWeight:'800',fontFamily:'Syne, sans-serif',marginBottom:'28px'}}>Settings</div>
       <div style={{background:'#111',borderRadius:'18px',padding:'20px',border:'1px solid #1c1c1c',marginBottom:'24px'}}>
-  <div style={{display:'flex',flexDirection:'column',gap:'14px'}}>
-    <div style={{display:'flex',gap:'12px',alignItems:'flex-start'}}>
-      <span style={{fontSize:'13px',fontWeight:'800',color:'#555',fontFamily:'Syne, sans-serif',flexShrink:0}}>1.</span>
-      <span style={{fontSize:'13px',color:'#aaa',lineHeight:'1.7'}}>Dopamine is your brain's reward signal — the lower it is, the more focused and driven you become.</span>
-    </div>
-    <div style={{height:'1px',background:'#1c1c1c'}}/>
-    <div style={{display:'flex',gap:'12px',alignItems:'flex-start'}}>
-      <span style={{fontSize:'13px',fontWeight:'800',color:'#555',fontFamily:'Syne, sans-serif',flexShrink:0}}>2.</span>
-      <span style={{fontSize:'13px',color:'#aaa',lineHeight:'1.7'}}>This app helps you control your dopamine, to be more focused, mentally clear, and in general more successful.</span>
-    </div>
-  </div>
-</div>
+        <div style={{display:'flex',flexDirection:'column',gap:'14px'}}>
+          <div style={{display:'flex',gap:'12px',alignItems:'flex-start'}}>
+            <span style={{fontSize:'13px',fontWeight:'800',color:'#555',fontFamily:'Syne, sans-serif',flexShrink:0}}>1.</span>
+            <span style={{fontSize:'13px',color:'#aaa',lineHeight:'1.7'}}>Dopamine is your brain's reward signal — the lower it is, the more focused and driven you become.</span>
+          </div>
+          <div style={{height:'1px',background:'#1c1c1c'}}/>
+          <div style={{display:'flex',gap:'12px',alignItems:'flex-start'}}>
+            <span style={{fontSize:'13px',fontWeight:'800',color:'#555',fontFamily:'Syne, sans-serif',flexShrink:0}}>2.</span>
+            <span style={{fontSize:'13px',color:'#aaa',lineHeight:'1.7'}}>This app helps you control your dopamine, to be more focused, mentally clear, and in general more successful.</span>
+          </div>
+        </div>
+      </div>
       <div style={{background:'#111',borderRadius:'18px',padding:'20px',border:'1px solid #1c1c1c',marginBottom:'14px'}}>
         <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',marginBottom:'14px',fontFamily:'Syne, sans-serif'}}>PROFILE</div>
         <div style={{display:'flex',gap:'20px',flexWrap:'wrap'}}>
@@ -518,15 +363,13 @@ function SettingsScreen({ data, setData }) {
           <button onClick={saveTarget} style={{flex:1,padding:'13px',background:'#fff',color:'#000',borderRadius:'12px',fontSize:'13px',fontWeight:'800',fontFamily:'Syne, sans-serif'}}>{saved?'✓':'SAVE'}</button>
         </div>
       </div>
-    <div style={{background:'#111',borderRadius:'18px',padding:'20px',border:'1px solid #1c1c1c',marginBottom:'14px'}}>
-  <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',marginBottom:'14px',fontFamily:'Syne, sans-serif'}}>ENTREPRENEUR MODE</div>
-  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-    <span style={{fontSize:'13px',color:'#aaa'}}>Dopamine range 0–25</span>
-    <button onClick={()=>setData({...data,entrepreneurMode:!data.entrepreneurMode})} style={{padding:'10px 20px',background:data.entrepreneurMode?'#fff':'#1a1a1a',color:data.entrepreneurMode?'#000':'#666',borderRadius:'12px',fontSize:'13px',fontWeight:'700',fontFamily:'Syne, sans-serif',border:'1px solid #252525'}}>
-      {data.entrepreneurMode ? 'ON' : 'OFF'}
-    </button>
-  </div>
-</div>
+      <div style={{background:'#111',borderRadius:'18px',padding:'20px',border:'1px solid #1c1c1c',marginBottom:'14px'}}>
+        <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',marginBottom:'14px',fontFamily:'Syne, sans-serif'}}>ENTREPRENEUR MODE</div>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <span style={{fontSize:'13px',color:'#aaa'}}>Dopamine range 0–25</span>
+          <button onClick={()=>setData({...data,entrepreneurMode:!data.entrepreneurMode})} style={{padding:'10px 20px',background:data.entrepreneurMode?'#fff':'#1a1a1a',color:data.entrepreneurMode?'#000':'#666',borderRadius:'12px',fontSize:'13px',fontWeight:'700',fontFamily:'Syne, sans-serif',border:'1px solid #252525'}}>{data.entrepreneurMode?'ON':'OFF'}</button>
+        </div>
+      </div>
       <div style={{background:'#111',borderRadius:'18px',padding:'20px',border:'1px solid #1c1c1c',marginBottom:'14px'}}>
         <div style={{fontSize:'11px',color:'#555',letterSpacing:'0.15em',marginBottom:'14px',fontFamily:'Syne, sans-serif'}}>RESET</div>
         <div style={{display:'flex',gap:'10px'}}>
@@ -541,49 +384,27 @@ function SettingsScreen({ data, setData }) {
     </div>
   );
 }
-function Nav({ screen, setScreen }) {
+
+function Nav({screen,setScreen}){
   const tabs=[{id:'home',label:'HOME',icon:'◉'},{id:'calendar',label:'CAL',icon:'◫'},{id:'settings',label:'SET',icon:'⚙'}];
-  return (
+  return(
     <div style={{position:'fixed',bottom:0,left:'50%',transform:'translateX(-50%)',width:'100%',maxWidth:'430px',background:'rgba(10,10,10,0.96)',backdropFilter:'blur(20px)',borderTop:'1px solid #1a1a1a',display:'flex',zIndex:100,paddingBottom:'env(safe-area-inset-bottom)'}}>
       {tabs.map(({id,label,icon})=>{const active=screen===id;return<button key={id} onClick={()=>setScreen(id)} style={{flex:1,padding:'14px 0 10px',display:'flex',flexDirection:'column',alignItems:'center',gap:'4px',color:active?'#fff':'#3a3a3a'}}><span style={{fontSize:'18px'}}>{icon}</span><span style={{fontSize:'9px',letterSpacing:'0.1em',fontFamily:'Syne, sans-serif',fontWeight:active?'700':'400'}}>{label}</span></button>;})}
     </div>
   );
 }
-function App() {
-  const [data, setData] = useState(()=>hydrate());
-  const [screen, setScreen] = useState('home');
-  const [installPrompt, setInstallPrompt] = useState(null);
-  const [showInstallScreen, setShowInstallScreen] = useState(false);
 
+function App(){
+  const[data,setData]=useState(()=>hydrate());const[screen,setScreen]=useState('home');const[installPrompt,setInstallPrompt]=useState(null);const[showInstallScreen,setShowInstallScreen]=useState(false);
   useEffect(()=>{const h=e=>{e.preventDefault();setInstallPrompt(e);};window.addEventListener('beforeinstallprompt',h);return()=>window.removeEventListener('beforeinstallprompt',h);},[]);
   useEffect(()=>{const t=setInterval(()=>{const today=todayStr();setData(prev=>{if(!prev||prev.lastReset!==today){const nd=prev?{...prev,dopamine:DEFAULT_DOPA,lastReset:today}:null;if(nd)save(nd);return nd;}return prev;});},60000);return()=>clearInterval(t);},[]);
-
   const updateData=d=>{setData(d);save(d);};
-
-  if(!data && !showInstallScreen) {
-    return <Onboarding onDone={profile=>{
-      const nd=initData(profile); save(nd); setData(nd);
-      setShowInstallScreen(true);
-    }}/>;
-  }
-if(data && !data.dailyGoal && data.lastGoalDate !== todayStr()) {
-  return <GoalScreen data={data} onDone={(activity, minutes)=>{
-    const nd={...data, dailyGoal:activity?{activity,minutes}:null, lastGoalDate:todayStr()};
-    updateData(nd);
-  }}/>;
-}
-  if(showInstallScreen) {
-    return <InstallScreen
-      installPrompt={installPrompt}
-      onInstall={()=>setShowInstallScreen(false)}
-      onSkip={()=>setShowInstallScreen(false)}
-    />;
-  }
-  
-  return (
+  if(!data&&!showInstallScreen)return<Onboarding onDone={profile=>{const nd=initData(profile);save(nd);setData(nd);setShowInstallScreen(true);}}/>;
+  if(data&&!data.dailyGoal&&data.lastGoalDate!==todayStr())return<GoalScreen data={data} onDone={(activity,minutes)=>{const nd={...data,dailyGoal:activity?{activity,minutes}:null,lastGoalDate:todayStr()};updateData(nd);}}/>;
+  if(showInstallScreen)return<InstallScreen installPrompt={installPrompt} onInstall={()=>setShowInstallScreen(false)} onSkip={()=>setShowInstallScreen(false)}/>;
+  return(
     <div style={{background:'#0a0a0a',color:'#fff',minHeight:'100vh',maxWidth:'430px',margin:'0 auto',fontFamily:"'Inter',sans-serif"}}>
       {screen==='home'&&<HomeScreen data={data} setData={updateData} installPrompt={installPrompt} setInstallPrompt={setInstallPrompt}/>}
-      {screen==='history'&&<HistoryScreen data={data}/>}
       {screen==='calendar'&&<CalendarScreen data={data}/>}
       {screen==='settings'&&<SettingsScreen data={data} setData={updateData}/>}
       <Nav screen={screen} setScreen={setScreen}/>

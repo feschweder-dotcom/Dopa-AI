@@ -73,7 +73,7 @@ function hydrate(){
   if(d.lastReset!==today){
     const prev=(d.activities||[]).filter(a=>a.date===d.lastReset);
     if(prev.length>0){const avg=prev.reduce((s,a)=>s+a.resultingDopamine,0)/prev.length;d.flames=(avg>=d.targetMin&&avg<=d.targetMax)?(d.flames||0)+1:0;}
-    d.dopamine=DEFAULT_DOPA;d.lastReset=today;save(d);
+    d.dopamine=DEFAULT_DOPA;d.lastReset=today;d.dailyGoal=null;d.lastGoalDate=null;save(d);
   }
   return d;
 }
@@ -400,7 +400,7 @@ function App(){
   useEffect(()=>{const t=setInterval(()=>{const today=todayStr();setData(prev=>{if(!prev||prev.lastReset!==today){const nd=prev?{...prev,dopamine:DEFAULT_DOPA,lastReset:today}:null;if(nd)save(nd);return nd;}return prev;});},60000);return()=>clearInterval(t);},[]);
   const updateData=d=>{setData(d);save(d);};
   if(!data&&!showInstallScreen)return<Onboarding onDone={profile=>{const nd=initData(profile);save(nd);setData(nd);setShowInstallScreen(true);}}/>;
-  if(data&&!data.dailyGoal&&data.lastGoalDate!==todayStr())return<GoalScreen data={data} onDone={(activity,minutes)=>{const nd={...data,dailyGoal:activity?{activity,minutes}:null,lastGoalDate:todayStr()};updateData(nd);}}/>;
+  if(data&&(!data.dailyGoal||!data.dailyGoal.activity)&&data.lastGoalDate!==todayStr())return<GoalScreen data={data} onDone={(activity,minutes)=>{const nd={...data,dailyGoal:activity?{activity,minutes}:null,lastGoalDate:todayStr()};updateData(nd);}}/>;
   if(showInstallScreen)return<InstallScreen installPrompt={installPrompt} onInstall={()=>setShowInstallScreen(false)} onSkip={()=>setShowInstallScreen(false)}/>;
   return(
     <div style={{background:'#0a0a0a',color:'#fff',minHeight:'100vh',maxWidth:'430px',margin:'0 auto',fontFamily:"'Inter',sans-serif"}}>
